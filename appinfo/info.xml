@@ -4,7 +4,7 @@
     <id>extract</id>
     <name>Extract</name>
     <summary>Allows to extract archive from the web interface</summary>
-    <description><![CDATA[This app allows you to right clic on a zip file to extract it.]]></description>
+    <description><![CDATA[This app allows you to right click on a zip file to extract it.]]></description>
     <version>0.0.1</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
