@@ -1,0 +1,11 @@
+.iconextract{
+	background-image: url('../img/extracticon.svg');
+	padding-left: 44px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    background-repeat-x: no-repeat;
+    background-repeat-y: no-repeat;
+    background-position-x: 14px;
+	background-position-y: 50%;
+	margin-left: 0 !important;
+}

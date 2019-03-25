@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>extract</id>
+    <name>Extract</name>
+    <summary>Allows to extract archive from the web interface</summary>
+    <description><![CDATA[This app allows you to right clic on a zip file to extract it.]]></description>
+    <version>0.0.1</version>
+    <licence>agpl</licence>
+    <author mail="paulereverend@gmail.com">Paul Lereverend</author>
+    <namespace>Extract</namespace>
+    <category>files</category>
+    <category>tools</category>
+    <bugs>https://github.com/PaulLereverend/NextcloudExtract</bugs>
+    <dependencies>
+        <nextcloud min-version="13" max-version="16"/>
+    </dependencies>
+</info>

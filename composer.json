@@ -1,0 +1,15 @@
+{
+    "name": "extract",
+    "description": "Allows to extract archive from the web interface",
+    "type": "project",
+    "license": "AGPL",
+    "authors": [
+        {
+            "name": "Paul Lereverend"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^5.4"
+    }
+}
