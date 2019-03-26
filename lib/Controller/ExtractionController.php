@@ -46,7 +46,7 @@ class ExtractionController extends Controller {
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
 				for($i = 0; $i < $zip->numFiles; $i++) {
 					$zip->extractTo($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory, array($zip->getNameIndex($i)));
-					self::scanFolder('/'.$this->UserId.'/files'.$directory.$zip->getNameIndex($i));					
+					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i));					
 				}
 				$zip->close();
 			}
