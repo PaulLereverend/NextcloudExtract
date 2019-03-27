@@ -3,17 +3,19 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>extract</id>
     <name>Extract</name>
-    <summary>Allows to extract archive from the web interface</summary>
-    <description><![CDATA[This app allows you to right click on a zip file to extract it. 
+    <summary>Extract zip archive from the web interface</summary>
+    <description>This app allows you to right click on a zip file to extract it. 
+
         If you want to use it on external local storage please add the link starting from the root to your base local storage at the end of your config.php file like this (without any / at the end) 
+        
         array (
             0 => '/your/directory', 
             1 => '/another/directory',
         ),
 
-        Rar will be supported in the next version. 
-    ]]></description>
-    <version>0.0.2</version>
+        Rar will be supported in the next version.
+    </description>
+    <version>0.0.3</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
     <namespace>Extract</namespace>
