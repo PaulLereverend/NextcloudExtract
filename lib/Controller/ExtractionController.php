@@ -52,6 +52,45 @@ class ExtractionController extends Controller {
 			}
 		}
 	}
+	public function extractHereRar($nameOfFile, $directory, $external) {
+		if ($external){
+			$externalUrl = $this->config->getSystemValue('external', '');
+			for ($i=0; $i < sizeof($externalUrl) && !$good; $i++){
+				try {
+					$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
+					$list = rar_list($rar_file);
+					foreach($list as $file) {
+						$entry = rar_entry_get($rar_file, $file->getName());
+						$entry->extract("."); // extract to the current dir
+					}
+					rar_close($rar_file);
+					$good = true;
+				} catch (\Exception $e) {
+					exec("unrar x ".$externalUrl[$i].$directory.'/'.$nameOfFile,$output,$return);
+					$good = $return;
+				}
+			}
+		}else{
+			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
+			try {
+				$rar_file = rar_open($dir);
+				$list = rar_list($rar_file);
+				foreach($list as $file) {
+					$entry = rar_entry_get($rar_file, $file->getName());
+					$entry->extract("."); // extract to the current dir
+					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$file->getName());
+				}
+				rar_close($rar_file);
+			} catch (\Exception $e) {
+				exec("unrar x ".$dir,$output,$return);
+				if ($return){
+					
+				}
+			}
+		}
+		
+		
+	}
 	protected function scanFolder($path)
     {
         $user = \OC::$server->getUserSession()->getUser()->getUID();

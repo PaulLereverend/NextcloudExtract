@@ -27,7 +27,7 @@ $(document).ready(function () {
                     $.ajax({
                         type: "POST",
                         async: "false",
-                        url: OC.filePath('extract', 'ajax','extractHere.php'),
+                        url: OC.filePath('extractt', 'ajax','extractHere.php'),
                         data: data,
                         success: function() {
                             context.fileList.reload();
