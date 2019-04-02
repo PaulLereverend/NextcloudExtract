@@ -9,10 +9,11 @@
         If you want to use it on external local storage please add the link starting from the root to your base local storage at the end of your config.php file like this (without any / at the end) 
         
         ]]>
-        array (
-            0 => '/your/directory', 
-            1 => '/another/directory',
-        ),
+        'external' => 
+            array (
+                0 => '/home/localfoler',
+                1 => '/share/anotherfolder',
+            ),
         <![CDATA[
 
         Rar will be supported in the next version.

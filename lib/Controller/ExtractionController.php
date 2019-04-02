@@ -6,6 +6,7 @@ use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
 use ZipArchive;
+use Rar;
 //use \OC\Files\Cache\Scanner;
 use \OCP\IConfig;
 
@@ -35,7 +36,7 @@ class ExtractionController extends Controller {
 		if ($external){
 			$good = false;
 			$externalUrl = $this->config->getSystemValue('external', '');
-			for ($i=0; $i < sizeof($externalUrl) && !$good; $i++){
+			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i]!= null; $i++){
 				if ($zip->open($externalUrl[$i].$directory.'/'.$nameOfFile) === TRUE) {
 					$zip->extractTo($externalUrl[$i].$directory.'/');
 					$zip->close();
@@ -54,9 +55,10 @@ class ExtractionController extends Controller {
 	}
 	public function extractHereRar($nameOfFile, $directory, $external) {
 		if ($external){
+			$good = false;
 			$externalUrl = $this->config->getSystemValue('external', '');
-			for ($i=0; $i < sizeof($externalUrl) && !$good; $i++){
-				try {
+			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i] != null; $i++){
+				if (extension_loaded ("rar")){
 					$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
 					$list = rar_list($rar_file);
 					foreach($list as $file) {
@@ -65,14 +67,15 @@ class ExtractionController extends Controller {
 					}
 					rar_close($rar_file);
 					$good = true;
-				} catch (\Exception $e) {
-					exec("unrar x ".$externalUrl[$i].$directory.'/'.$nameOfFile,$output,$return);
-					$good = $return;
+				}else{
+					exec("unrar x ".$externalUrl[$i].$directory.$nameOfFile." -R ".$externalUrl[$i].$directory.' -o+',$output,$return);
+					$good = (sizeof($output) > 0);
 				}
 			}
 		}else{
-			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
-			try {
+			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.$nameOfFile;
+			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
+			if (extension_loaded ("rar")){
 				$rar_file = rar_open($dir);
 				$list = rar_list($rar_file);
 				foreach($list as $file) {
@@ -80,11 +83,15 @@ class ExtractionController extends Controller {
 					$entry->extract("."); // extract to the current dir
 					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$file->getName());
 				}
-				rar_close($rar_file);
-			} catch (\Exception $e) {
-				exec("unrar x ".$dir,$output,$return);
-				if ($return){
-					
+				rar_close($rar_file); 
+			}else{
+				exec("unrar x ".$file." -R ".$dir." -o+",$output,$return);
+				foreach ($output as $val ) {
+					if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" && 
+					preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
+						$fichier = substr(strrchr($PATH, "/"), 1);
+						self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
+					}
 				}
 			}
 		}

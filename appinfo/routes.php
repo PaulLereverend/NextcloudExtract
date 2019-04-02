@@ -14,5 +14,10 @@ return [
         'url'  => 'ajax/extractHere.php',
         'verb' => 'POST'
         ],
+        [
+        'name' => 'extraction#extractHereRar',
+        'url'  => 'ajax/extractRar.php',
+        'verb' => 'POST'
+        ],
     ]
 ];

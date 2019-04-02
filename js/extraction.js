@@ -27,7 +27,7 @@ $(document).ready(function () {
                     $.ajax({
                         type: "POST",
                         async: "false",
-                        url: OC.filePath('extractt', 'ajax','extractHere.php'),
+                        url: OC.filePath('extract', 'ajax','extractHere.php'),
                         data: data,
                         success: function() {
                             context.fileList.reload();
@@ -38,7 +38,7 @@ $(document).ready(function () {
 
             // For the next version
             
-            /*OCA.Files.fileActions.registerAction({
+            OCA.Files.fileActions.registerAction({
 				name: 'extractrar',
 				displayName: 'Extract here',
 				mime: 'application/x-rar-compressed',
@@ -62,14 +62,14 @@ $(document).ready(function () {
                     $.ajax({
                         type: "POST",
                         async: "false",
-                        url: OC.filePath('extract', 'ajax','extractHere.php'),
+                        url: OC.filePath('extract', 'ajax','extractRar.php'),
                         data: data,
                         success: function() {
                             context.fileList.reload();
                         }
                     });
 				}
-            }); */
+            }); 
 		},
 	}
 	actionsExtract.init();
