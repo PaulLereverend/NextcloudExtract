@@ -58,18 +58,19 @@ class ExtractionController extends Controller {
 			$good = false;
 			$externalUrl = $this->config->getSystemValue('external', '');
 			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i] != null; $i++){
-				if (extension_loaded ("rar")){
-					$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
-					$list = rar_list($rar_file);
-					foreach($list as $file) {
-						$entry = rar_entry_get($rar_file, $file->getName());
-						$entry->extract("."); // extract to the current dir
-					}
-					rar_close($rar_file);
+				if (file_exists($externalUrl[$i].$directory."/".$nameOfFile)){
 					$good = true;
-				}else{
-					exec("unrar x ".$externalUrl[$i].$directory.$nameOfFile." -R ".$externalUrl[$i].$directory.' -o+',$output,$return);
-					$good = (sizeof($output) > 0);
+					if (extension_loaded ("rar")){
+						$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
+						$list = rar_list($rar_file);
+						foreach($list as $file) {
+							$entry = rar_entry_get($rar_file, $file->getName());
+							$entry->extract("."); // extract to the current dir
+						}
+						rar_close($rar_file);
+					}else{
+						exec("unrar x '".$externalUrl[$i].$directory."/".$nameOfFile."' -R '".$externalUrl[$i].$directory."' -o+",$output,$return);
+					}
 				}
 			}
 		}else{

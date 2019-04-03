@@ -9,7 +9,7 @@ $(document).ready(function () {
 				mime: 'application/zip',
 				permissions: OC.PERMISSION_READ,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
-				iconClass: 'iconextract',
+				iconClass: 'icon-extract',
 				actionHandler: function (filename, context) {
                     if (context.fileInfoModel.attributes.mountType == "external"){
                         var data = {
@@ -44,7 +44,7 @@ $(document).ready(function () {
 				mime: 'application/x-rar-compressed',
 				permissions: OC.PERMISSION_READ,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
-				iconClass: 'iconextract',
+				iconClass: 'icon-extract',
 				actionHandler: function (filename, context) {
                     if (context.fileInfoModel.attributes.mountType == "external"){
                         var data = {
@@ -59,6 +59,8 @@ $(document).ready(function () {
                             external : 0
                         };
                     }
+                    var tr = context.fileList.findFileEl(filename);
+				    context.fileList.showFileBusyState(tr, true);
                     $.ajax({
                         type: "POST",
                         async: "false",
