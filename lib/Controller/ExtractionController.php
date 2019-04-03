@@ -65,7 +65,7 @@ class ExtractionController extends Controller {
 						$list = rar_list($rar_file);
 						foreach($list as $file) {
 							$entry = rar_entry_get($rar_file, $file->getName());
-							$entry->extract("."); // extract to the current dir
+							$entry->extract($externalUrl[$i].$directory.'/'); 
 						}
 						rar_close($rar_file);
 					}else{
@@ -77,12 +77,13 @@ class ExtractionController extends Controller {
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
 			if (extension_loaded ("rar")){
-				$rar_file = rar_open($dir);
+				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
-				foreach($list as $file) {
-					$entry = rar_entry_get($rar_file, $file->getName());
-					$entry->extract("."); // extract to the current dir
-					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$file->getName());
+				foreach($list as $fileOpen) {
+					echo "two";
+					$entry = rar_entry_get($rar_file, $fileOpen->getName());
+					$entry->extract($dir); // extract to the current dir
+					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName());
 				}
 				rar_close($rar_file); 
 			}else{
