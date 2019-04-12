@@ -7,6 +7,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
 use ZipArchive;
 use Rar;
+use PharData;
 //use \OC\Files\Cache\Scanner;
 use \OCP\IConfig;
 
@@ -60,7 +61,7 @@ class ExtractionController extends Controller {
 			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i] != null; $i++){
 				if (file_exists($externalUrl[$i].$directory."/".$nameOfFile)){
 					$good = true;
-					if (extension_loaded ("rar")){
+					if (!extension_loaded ("rar")){
 						$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
 						$list = rar_list($rar_file);
 						foreach($list as $file) {
@@ -80,14 +81,13 @@ class ExtractionController extends Controller {
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
 				foreach($list as $fileOpen) {
-					echo "two";
 					$entry = rar_entry_get($rar_file, $fileOpen->getName());
 					$entry->extract($dir); // extract to the current dir
 					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName());
 				}
 				rar_close($rar_file); 
 			}else{
-				exec("unrar x ".$file." -R ".$dir." -o+",$output,$return);
+				exec("unrar x \"".$file."\" -R \"".$dir."\" -o+",$output,$return);
 				foreach ($output as $val ) {
 					if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" && 
 					preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
@@ -97,8 +97,61 @@ class ExtractionController extends Controller {
 				}
 			}
 		}
+	}
+	public function extractHereTar($nameOfFile, $directory, $external) {
+		$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.$nameOfFile;
+		$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
+		/*$archive = new PharData($theTar);
+		// error cheecking excluded    
+		foreach($archive as $entry) {
+		$extractDir = basename($file) . '/';
+		if($file->isDir()) {
+			$dir = new PharData($file->getPathname());          
+			foreach($dir as $child) {
+			$extract_file = $extractDir . basename($child);
+			$archive->extractTo('/mypath/my-dir', $extract_file, true);
+			}
+		}
+		}*/
+		// decompress from gz
 		
+		if (strpos($nameOfFile, '.tar.')){
+			$p = new PharData($file);
+			$p->decompress();
+
+			$phar = new PharData($dir."/".$p.".tar");
+			//$phar->extractTo($dir); 
+			foreach ($phar as $file) {
+				echo basename($file);
+				$phar->extractTo($dir, basename($file), true);
+			}
+			unlink($dir."/".$p.".tar"); 
+		}else{
+
+		}
+			
+
+		/*$p->decompress(); // creates files.tar
 		
+		echo $p;
+		// unarchive from the tar
+		$phar = new PharData("extract.tar");
+		$phar->extractTo($dir); 
+		/*try {
+			$phar = new PharData('monphar.tar');
+			$phar->extractTo('/chemin/complet'); // extrait tous les fichiers
+			$phar->extractTo('/un/autre/chemin', 'fichier.txt'); // extrait seulement fichier.txt
+			$phar->extractTo('/ce/chemin',
+				array('fichier1.txt', 'fichier2.txt')); // extrait seulement 2 fichiers
+			$phar->extractTo('/troisieme/chemin', null, true); // extrait tous les fichiers, en écrasant
+		} catch (Exception $e) {
+			// on traite les erreurs
+		}
+		if ($external){
+		}else{
+
+		} */
+
 	}
 	protected function scanFolder($path)
     {
