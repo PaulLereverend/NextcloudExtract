@@ -61,7 +61,7 @@ class ExtractionController extends Controller {
 			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i] != null; $i++){
 				if (file_exists($externalUrl[$i].$directory."/".$nameOfFile)){
 					$good = true;
-					if (!extension_loaded ("rar")){
+					if (extension_loaded ("rar")){
 						$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
 						$list = rar_list($rar_file);
 						foreach($list as $file) {
