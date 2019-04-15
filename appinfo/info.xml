@@ -7,19 +7,19 @@
     <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudExtract/master/img/extract.png</screenshot>
     <description><![CDATA[Extract zip and rar files.
 
-        *  **Features :** Zip and rar extraction.
+*  **Features :** Zip and rar extraction.
 
-        *  **Requirements :** Rar PHP extension or unrar (pecl -v install rar)
+*  **Requirements :** Rar PHP extension or unrar (pecl -v install rar)
 
-        *  **Note :** If you want to use this app on external local storage add the mount points on your config.php file like this (no / at the end)
+*  **Note :** If you want to use this app on external local storage add the mount points on your config.php file like this (no / at the end)
 
-            `'external' => 
-            array (
-                0 => '/home/localfoler',
-                1 => '/share/anotherfolder',
-            ),`
-            ]]>
-    </description>
+`'external' => 
+array (
+    0 => '/home/localfoler',
+    1 => '/share/anotherfolder',
+),`
+]]></description>
+
     <version>1.1.0</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
