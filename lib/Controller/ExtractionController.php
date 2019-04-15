@@ -75,11 +75,12 @@ class ExtractionController extends Controller {
 				}
 			}
 		}else{
-			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.$nameOfFile;
+			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
 			if (extension_loaded ("rar")){
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
+				var_dump($rar_file);
 				foreach($list as $fileOpen) {
 					$entry = rar_entry_get($rar_file, $fileOpen->getName());
 					$entry->extract($dir); // extract to the current dir
