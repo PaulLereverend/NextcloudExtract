@@ -5,22 +5,20 @@
     <name>Extract</name>
     <summary>Extract archive from the web interface</summary>
     <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudExtract/master/img/extract.png</screenshot>
-    <description><![CDATA[Extract zip and rar files.
+    <description><![CDATA[Extract zip and rar archive.
 
 *  **Features :** Zip and rar extraction.
 
-*  **Requirements :** Rar PHP extension or unrar (pecl -v install rar)
+*  **Requirements :** 
+    * o Rar PHP extension  (pecl -v install rar)
+    
+    * **OR** 
+    * o unrar (sudo apt-get install unrar)
 
-*  **Note :** If you want to use this app on external local storage add the mount points on your config.php file like this (no / at the end)
-
-`'external' => 
-array (
-    0 => '/home/localfoler',
-    1 => '/share/anotherfolder',
-),`
+*  **Note :** Tar.gz will be added in the next version
 ]]></description>
 
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
     <namespace>Extract</namespace>
