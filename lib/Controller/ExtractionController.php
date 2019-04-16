@@ -8,7 +8,6 @@ use OCP\AppFramework\Controller;
 use ZipArchive;
 use Rar;
 use PharData;
-//use \OC\Files\Cache\Scanner;
 use \OCP\IConfig;
 
 
@@ -32,18 +31,29 @@ class ExtractionController extends Controller {
 	 * @NoCSRFRequired
 	 */
 
-    public function extractHere($nameOfFile, $directory, $external) {
+	public function getExternalMP(){
+		$mounts = \OC_Mount_Config::getAbsoluteMountPoints($this->UserId);
+		$externalMountPoints = array();
+		foreach($mounts as $mount){
+			if ($mount["backend"] == "Local"){
+				$externalMountPoints[] = $mount["options"]["datadir"];
+			}
+		}
+		return $externalMountPoints;
+	}
+    public function extractHere($nameOfFile, $directory, $external) {		
 		$zip = new ZipArchive();
 		if ($external){
-			$good = false;
-			$externalUrl = $this->config->getSystemValue('external', '');
-			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i]!= null; $i++){
-				if ($zip->open($externalUrl[$i].$directory.'/'.$nameOfFile) === TRUE) {
-					$zip->extractTo($externalUrl[$i].$directory.'/');
+			$externalMountPoints = $this->getExternalMP();
+			foreach($externalMountPoints as $externalMP){
+				if ($zip->open($externalMP.$directory.'/'.$nameOfFile) === TRUE) {
+					$zip->extractTo($externalMP.$directory.'/');
 					$zip->close();
-					$good = true;
+					echo "ok";
+					return;
 				}
 			}
+			echo "ko";
 		}else{
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
 				for($i = 0; $i < $zip->numFiles; $i++) {
@@ -56,24 +66,25 @@ class ExtractionController extends Controller {
 	}
 	public function extractHereRar($nameOfFile, $directory, $external) {
 		if ($external){
-			$good = false;
-			$externalUrl = $this->config->getSystemValue('external', '');
-			for ($i=0; $i < sizeof($externalUrl) && !$good && $externalUrl[$i] != null; $i++){
-				if (file_exists($externalUrl[$i].$directory."/".$nameOfFile)){
-					$good = true;
+			$externalMountPoints = $this->getExternalMP();
+			foreach($externalMountPoints as $externalMP){
+				if (file_exists($externalMP.$directory."/".$nameOfFile)){
 					if (extension_loaded ("rar")){
-						$rar_file = rar_open($externalUrl[$i].$directory.'/'.$nameOfFile);
+						$rar_file = rar_open($externalMP.$directory.'/'.$nameOfFile);
 						$list = rar_list($rar_file);
 						foreach($list as $file) {
 							$entry = rar_entry_get($rar_file, $file->getName());
-							$entry->extract($externalUrl[$i].$directory.'/'); 
+							$entry->extract($externalMP.$directory.'/'); 
 						}
 						rar_close($rar_file);
 					}else{
-						exec("unrar x '".$externalUrl[$i].$directory."/".$nameOfFile."' -R '".$externalUrl[$i].$directory."' -o+",$output,$return);
+						exec("unrar x '".$externalMP.$directory."/".$nameOfFile."' -R '".$externalMP.$directory."' -o+",$output,$return);
 					}
+					echo "ok";
+					return;
 				}
 			}
+			echo "ko";
 		}else{
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
