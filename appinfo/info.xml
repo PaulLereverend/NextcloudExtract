@@ -10,10 +10,10 @@
 *  **Features :** Zip and rar extraction.
 
 *  **Requirements :** 
-    * o Rar PHP extension  (pecl -v install rar)
+    * Rar PHP extension  (pecl -v install rar)
     
     * **OR** 
-    * o unrar (sudo apt-get install unrar)
+    * unrar (sudo apt-get install unrar)
 
 *  **Note :** Tar.gz will be added in the next version
 ]]></description>

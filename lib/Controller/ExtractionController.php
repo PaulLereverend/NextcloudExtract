@@ -55,7 +55,10 @@ class ExtractionController extends Controller {
 			}
 			echo "ko";
 		}else{
+			echo "avant";
+			echo $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
+				echo "apr§s";
 				for($i = 0; $i < $zip->numFiles; $i++) {
 					$zip->extractTo($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory, array($zip->getNameIndex($i)));
 					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i));					
@@ -110,60 +113,25 @@ class ExtractionController extends Controller {
 			}
 		}
 	}
-	public function extractHereTar($nameOfFile, $directory, $external) {
-		$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.$nameOfFile;
-		$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
-		/*$archive = new PharData($theTar);
-		// error cheecking excluded    
-		foreach($archive as $entry) {
-		$extractDir = basename($file) . '/';
-		if($file->isDir()) {
-			$dir = new PharData($file->getPathname());          
-			foreach($dir as $child) {
-			$extract_file = $extractDir . basename($child);
-			$archive->extractTo('/mypath/my-dir', $extract_file, true);
-			}
-		}
-		}*/
-		// decompress from gz
-		
-		if (strpos($nameOfFile, '.tar.')){
-			$p = new PharData($file);
-			$p->decompress();
-
-			$phar = new PharData($dir."/".$p.".tar");
-			//$phar->extractTo($dir); 
-			foreach ($phar as $file) {
-				echo basename($file);
-				$phar->extractTo($dir, basename($file), true);
-			}
-			unlink($dir."/".$p.".tar"); 
-		}else{
-
-		}
-			
-
-		/*$p->decompress(); // creates files.tar
-		
-		echo $p;
-		// unarchive from the tar
-		$phar = new PharData("extract.tar");
-		$phar->extractTo($dir); 
-		/*try {
-			$phar = new PharData('monphar.tar');
-			$phar->extractTo('/chemin/complet'); // extrait tous les fichiers
-			$phar->extractTo('/un/autre/chemin', 'fichier.txt'); // extrait seulement fichier.txt
-			$phar->extractTo('/ce/chemin',
-				array('fichier1.txt', 'fichier2.txt')); // extrait seulement 2 fichiers
-			$phar->extractTo('/troisieme/chemin', null, true); // extrait tous les fichiers, en écrasant
-		} catch (Exception $e) {
-			// on traite les erreurs
-		}
+	public function extractHereOthers($nameOfFile, $directory, $external) {
 		if ($external){
+			$externalMountPoints = $this->getExternalMP();
+			foreach($externalMountPoints as $externalMP){
+				if (file_exists($externalMP.$directory."/".$nameOfFile)){
+					exec("7z -y x '".$externalMP.$directory."/".$nameOfFile."' -o'".$externalMP.$directory."/".pathinfo($nameOfFile)['filename']."/'");
+					echo "ok";
+					echo "7z -y x '".$externalMP.$directory."/".$nameOfFile."' -o'".$externalMP.$directory."/".pathinfo($nameOfFile)['filename']."/'";
+					return;
+				}
+			}
+			echo "ko";
 		}else{
-
-		} */
-
+			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
+			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
+			exec("7z -y x '".$file."' -o'".$dir."' ");
+			echo "7z -y x '".$file."' -o'".$dir."' ";
+			self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename']);
+		}
 	}
 	protected function scanFolder($path)
     {

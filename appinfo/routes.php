@@ -20,8 +20,8 @@ return [
             'verb' => 'POST'
         ],
         [
-            'name' => 'extraction#extractHereTar',
-            'url'  => 'ajax/extractTar.php',
+            'name' => 'extraction#extractHereOthers',
+            'url'  => 'ajax/extractOthers.php',
             'verb' => 'POST'
         ],
     ]
