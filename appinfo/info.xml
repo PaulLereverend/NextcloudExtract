@@ -7,7 +7,15 @@
     <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudExtract/master/img/extract.png</screenshot>
     <description><![CDATA[Extract zip and rar archive.
 
-*  **Features :** Zip and rar extraction.
+*  **Supported :** 
+
+    * Zip 
+    * Rar
+    * Tar
+    * Gzip
+    * 7z
+    * Deb
+    * Bzip2
 
 *  **Requirements :** 
     * Rar PHP extension  (pecl -v install rar)
@@ -15,10 +23,13 @@
     * **OR** 
     * unrar (sudo apt-get install unrar)
 
+    * **AND**
+    * p7zip (sudo apt-get install p7zip p7zip-full)
+
 *  **Note :** Tar.gz will be added in the next version
 ]]></description>
 
-    <version>1.1.1</version>
+    <version>1.2.0</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
     <namespace>Extract</namespace>

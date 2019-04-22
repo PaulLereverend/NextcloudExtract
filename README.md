@@ -1,11 +1,17 @@
 # Extract
 Place this app in **nextcloud/apps/**
 
-## Features
+## Supported
 
-* Zip extraction
-* Rar extraction (partial)
+* Zip 
+* Rar
+* Tar
+* Gzip
+* 7z
+* Deb
+* Bzip2
 
 ## Requirements
 
 * Rar PHP extension or unrar 
+* p7zip 
