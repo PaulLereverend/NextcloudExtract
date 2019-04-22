@@ -13,8 +13,8 @@ Place this app in **nextcloud/apps/**
 
 ## Requirements
 
-* Rar PHP extension or unrar 
-* p7zip 
+* Rar PHP extension ```pecl -v install rar``` or unrar ```sudo apt-get install unrar``` 
+* p7zip ```sudo apt-get install p7zip p7zip-full```
 
 ## Preview
 
