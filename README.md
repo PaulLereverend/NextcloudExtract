@@ -18,4 +18,4 @@ Place this app in **nextcloud/apps/**
 
 ## Preview
 
-![alt text](https://raw.githubusercontent.com/PaulLereverend/NextcloudVideo_Converter/master/img/extract.png)
+![alt text](https://raw.githubusercontent.com/PaulLereverend/NextcloudExtract/master/img/extract.png)
