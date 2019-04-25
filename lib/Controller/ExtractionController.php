@@ -15,18 +15,9 @@ class ExtractionController extends Controller {
 	private $UserId;
 	private $config;
 	public function __construct(IConfig $config,$AppName, IRequest $request, string $UserId){
-		echo "cons";
 		parent::__construct($AppName, $request);
 		$this->config = $config;
-		/*$view = new \OC\Files\View('/' . $UserId);
-		$absoluteDir = $view->getAbsolutePath('/');
-		$mount = $view->getMount('/');
-		$internalPath = $mount->getInternalPath($absoluteDir);
-
-		echo $internalPath;*/
-		//var_dump(\OC::$SERVERROOT);
 		$this->UserId = $UserId;
-		echo "after";
 	}
 
 	/**
@@ -44,32 +35,23 @@ class ExtractionController extends Controller {
 	*/
 
 	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {	
-		echo "1";	
 		$zip = new ZipArchive();
 		if ($external){
-			echo "2";
 			$externalMountPoints = $this->getExternalMP();
-			echo "3";
 			foreach($externalMountPoints as $externalMP){
-				echo "4";
 				if ($zip->open($externalMP.$directory.'/'.$nameOfFile) === TRUE) {
-					echo "5";
 					$zip->extractTo($externalMP.$directory.'/');
 					$zip->close();
-					echo "6";
-					echo "ok";
 					return;
 				}
 			}
 			echo "ko";
 		}else{
-			echo "avant";
 			if ($shareOwner != null){
 				$this->UserId = $shareOwner;
 			}
 			echo $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
-				echo "apr§s";
 				for($i = 0; $i < $zip->numFiles; $i++) {
 					$zip->extractTo($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory, array($zip->getNameIndex($i)));
 					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i));					
@@ -81,7 +63,6 @@ class ExtractionController extends Controller {
 	/**
 	* @NoAdminRequired
 	*/
-	
 	public function extractHereRar($nameOfFile, $directory, $external, $shareOwner = null) {
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
