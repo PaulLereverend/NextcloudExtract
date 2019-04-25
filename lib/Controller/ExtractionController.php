@@ -12,12 +12,21 @@ use \OCP\IConfig;
 
 
 class ExtractionController extends Controller {
-	private $config;
 	private $UserId;
-	public function __construct(IConfig $config, $AppName, IRequest $request, string $UserId){
+	private $config;
+	public function __construct(IConfig $config,$AppName, IRequest $request, string $UserId){
+		echo "cons";
 		parent::__construct($AppName, $request);
 		$this->config = $config;
+		/*$view = new \OC\Files\View('/' . $UserId);
+		$absoluteDir = $view->getAbsolutePath('/');
+		$mount = $view->getMount('/');
+		$internalPath = $mount->getInternalPath($absoluteDir);
+
+		echo $internalPath;*/
+		//var_dump(\OC::$SERVERROOT);
 		$this->UserId = $UserId;
+		echo "after";
 	}
 
 	/**
@@ -27,28 +36,27 @@ class ExtractionController extends Controller {
 	 *          basically the only required method to add this exemption, don't
 	 *          add it to any other method if you don't exactly know what it does
 	 *
-	 * @NoAdminRequired
+	 * 
 	 * @NoCSRFRequired
 	 */
+    /**
+	* @NoAdminRequired
+	*/
 
-	public function getExternalMP(){
-		$mounts = \OC_Mount_Config::getAbsoluteMountPoints($this->UserId);
-		$externalMountPoints = array();
-		foreach($mounts as $mount){
-			if ($mount["backend"] == "Local"){
-				$externalMountPoints[] = $mount["options"]["datadir"];
-			}
-		}
-		return $externalMountPoints;
-	}
-    public function extractHere($nameOfFile, $directory, $external) {		
+	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {	
+		echo "1";	
 		$zip = new ZipArchive();
 		if ($external){
+			echo "2";
 			$externalMountPoints = $this->getExternalMP();
+			echo "3";
 			foreach($externalMountPoints as $externalMP){
+				echo "4";
 				if ($zip->open($externalMP.$directory.'/'.$nameOfFile) === TRUE) {
+					echo "5";
 					$zip->extractTo($externalMP.$directory.'/');
 					$zip->close();
+					echo "6";
 					echo "ok";
 					return;
 				}
@@ -56,6 +64,9 @@ class ExtractionController extends Controller {
 			echo "ko";
 		}else{
 			echo "avant";
+			if ($shareOwner != null){
+				$this->UserId = $shareOwner;
+			}
 			echo $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
 				echo "apr§s";
@@ -67,7 +78,11 @@ class ExtractionController extends Controller {
 			}
 		}
 	}
-	public function extractHereRar($nameOfFile, $directory, $external) {
+	/**
+	* @NoAdminRequired
+	*/
+	
+	public function extractHereRar($nameOfFile, $directory, $external, $shareOwner = null) {
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
 			foreach($externalMountPoints as $externalMP){
@@ -89,6 +104,9 @@ class ExtractionController extends Controller {
 			}
 			echo "ko";
 		}else{
+			if ($shareOwner != null){
+				$this->UserId = $shareOwner;
+			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
 			if (extension_loaded ("rar")){
@@ -113,7 +131,10 @@ class ExtractionController extends Controller {
 			}
 		}
 	}
-	public function extractHereOthers($nameOfFile, $directory, $external) {
+	/**
+	* @NoAdminRequired
+	*/
+	public function extractHereOthers($nameOfFile, $directory, $external, $shareOwner = null) {
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
 			foreach($externalMountPoints as $externalMP){
@@ -126,6 +147,10 @@ class ExtractionController extends Controller {
 			}
 			echo "ko";
 		}else{
+			if ($shareOwner != null){
+				$this->UserId = $shareOwner;
+			}
+
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
 			exec("7z -y x '".$file."' -o'".$dir."' ");
@@ -144,5 +169,15 @@ class ExtractionController extends Controller {
         } catch (\Exception $e) {
 			echo $e;
         }
-    } 
+	}
+	public function getExternalMPTEST(){
+		$mounts = \OC_Mount_Config::getAbsoluteMountPoints($this->UserId);
+		$externalMountPoints = array();
+		foreach($mounts as $mount){
+			if ($mount["backend"] == "Local"){
+				$externalMountPoints[] = $mount["options"]["datadir"];
+			}
+		}
+		return $externalMountPoints;
+	} 
 }

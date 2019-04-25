@@ -7,7 +7,7 @@ $(document).ready(function () {
 				name: 'extractzip',
 				displayName: 'Extract here',
 				mime: 'application/zip',
-				permissions: OC.PERMISSION_READ,
+				permissions: OC.PERMISSION_UPDATE,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
 				iconClass: 'icon-extract',
 				actionHandler: function (filename, context) {
@@ -21,7 +21,8 @@ $(document).ready(function () {
                         var data = {
                             nameOfFile: filename,
                             directory: context.dir,
-                            external : 0
+                            external : 0,
+                            shareOwner : context.fileList.dirInfo.shareOwnerId 
                         };
                     }
                     $.ajax({
@@ -55,7 +56,8 @@ $(document).ready(function () {
                         var data = {
                             nameOfFile: filename,
                             directory: context.dir,
-                            external : 0
+                            external : 0,
+                            shareOwner : context.fileList.dirInfo.shareOwnerId 
                         };
                     }
                     var tr = context.fileList.findFileEl(filename);
@@ -93,7 +95,8 @@ $(document).ready(function () {
                             var data = {
                                 nameOfFile: filename,
                                 directory: context.dir,
-                                external : 0
+                                external : 0,
+                                shareOwner : context.fileList.dirInfo.shareOwnerId 
                             };
                         }
                         var tr = context.fileList.findFileEl(filename);
