@@ -5,6 +5,7 @@ use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
+use OCP\Files\NotFoundException;
 use ZipArchive;
 use Rar;
 use PharData;
@@ -18,6 +19,7 @@ class ExtractionController extends Controller {
 		parent::__construct($AppName, $request);
 		$this->config = $config;
 		$this->UserId = $UserId;
+		//header("Content-type: application/json");
 	}
 
 	/**
@@ -34,36 +36,50 @@ class ExtractionController extends Controller {
 	* @NoAdminRequired
 	*/
 
-	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {	
+	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
+		if (!extension_loaded ("zip")){
+			$response = array_merge($response, array("code" => 0, "desc" => "Zip extension is not available"));
+			echo json_encode($response);
+			return;
+		}	
 		$zip = new ZipArchive();
+		$response = array();
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
 			foreach($externalMountPoints as $externalMP){
 				if ($zip->open($externalMP.$directory.'/'.$nameOfFile) === TRUE) {
 					$zip->extractTo($externalMP.$directory.'/');
 					$zip->close();
+					$response = array_merge($response, array("code" => 1));
+					echo json_encode($response);
 					return;
 				}
 			}
-			echo "ko";
+			$response = array_merge($response, array("code" => 0, "desc" => "Can't find zip file"));
 		}else{
 			if ($shareOwner != null){
 				$this->UserId = $shareOwner;
 			}
-			echo $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
 				for($i = 0; $i < $zip->numFiles; $i++) {
 					$zip->extractTo($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory, array($zip->getNameIndex($i)));
-					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i));					
+					if(!self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i))){
+						return;
+					}
 				}
 				$zip->close();
+				$response = array_merge($response, array("code" => 1));
+			}else{
+				$response = array_merge($response, array("code" => 0, "desc" => "Can't open zip file at ".$this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile));
 			}
 		}
+		echo json_encode($response);
 	}
 	/**
 	* @NoAdminRequired
 	*/
 	public function extractHereRar($nameOfFile, $directory, $external, $shareOwner = null) {
+		$response = array();
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
 			foreach($externalMountPoints as $externalMP){
@@ -76,14 +92,23 @@ class ExtractionController extends Controller {
 							$entry->extract($externalMP.$directory.'/'); 
 						}
 						rar_close($rar_file);
+						$response = array_merge($response, array("code" => 1));
+						echo json_encode($response);
 					}else{
-						exec("unrar x '".$externalMP.$directory."/".$nameOfFile."' -R '".$externalMP.$directory."' -o+",$output,$return);
-					}
-					echo "ok";
+							exec("unrar x '".$externalMP.$directory."/".$nameOfFile."' -R '".$externalMP.$directory."' -o+",$output,$return);
+							if (sizeof($output) == 0){
+								$response = array_merge($response, array("code" => 0, "desc" => "rar extension or unrar is not installed or available"));
+								echo json_encode($response);
+							}else{
+								$response = array_merge($response, array("code" => 1));
+								echo json_encode($response);
+							}
+					}	
 					return;
 				}
 			}
-			echo "ko";
+			$response = array_merge($response, array("code" => 0, "desc" => "Can't find rar file"));
+			echo json_encode($response);
 		}else{
 			if ($shareOwner != null){
 				$this->UserId = $shareOwner;
@@ -93,21 +118,42 @@ class ExtractionController extends Controller {
 			if (extension_loaded ("rar")){
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
-				var_dump($rar_file);
 				foreach($list as $fileOpen) {
 					$entry = rar_entry_get($rar_file, $fileOpen->getName());
 					$entry->extract($dir); // extract to the current dir
-					self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName());
+					if(!self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName())){
+						return;
+					}
 				}
 				rar_close($rar_file); 
+				$response = array_merge($response, array("code" => 1));
+				echo json_encode($response);
+				return;
+
 			}else{
 				exec("unrar x \"".$file."\" -R \"".$dir."\" -o+",$output,$return);
-				foreach ($output as $val ) {
-					if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" && 
-					preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
-						$fichier = substr(strrchr($PATH, "/"), 1);
-						self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
+				if(sizeof($output) <= 4){
+					if (file_exists($file)){
+						$response = array_merge($response, array("code" => 0, "desc" => "rar extension or unrar is not installed or available"));
+						echo json_encode($response);
+					}else{
+						$response = array_merge($response, array("code" => 0, "desc" => "Can't find rar file at ".$file));
+						echo json_encode($response);
 					}
+					return;
+				}else{
+					foreach ($output as $val) {
+						if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" && 
+						preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
+							$fichier = substr(strrchr($PATH, "/"), 1);
+							if(!self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier)){
+								return;
+							}
+						}
+					}
+					$response = array_merge($response, array("code" => 1));
+					echo json_encode($response);
+					return;
 				}
 			}
 		}
@@ -139,19 +185,30 @@ class ExtractionController extends Controller {
 			self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename']);
 		}
 	}
-	protected function scanFolder($path)
+	public function scanFolder($path)
     {
+		$response = array();
         $user = \OC::$server->getUserSession()->getUser()->getUID();
-        $scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(), \OC::$server->getLogger());
+		$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(), \OC::$server->getLogger());
+
 		try {
             $scanner->scan($path, $recusive = false);
         } catch (ForbiddenException $e) {
-			echo $e;
-        } catch (\Exception $e) {
-			echo $e;
-        }
+			$response = array_merge($response, array("code" => 0, "desc" => $e));
+			echo json_encode($response);
+			return 0;
+        }catch (NotFoundException $e){
+			$response = array_merge($response, array("code" => 0, "desc" => "Can't scan file at ".$path));
+			echo json_encode($response);
+			return 0;
+		}catch (\Exception $e){
+			$response = array_merge($response, array("code" => 0, "desc" => $e));
+			echo json_encode($response);
+			return 0;
+		}
+		return 1;
 	}
-	public function getExternalMPTEST(){
+	public function getExternalMP(){
 		$mounts = \OC_Mount_Config::getAbsoluteMountPoints($this->UserId);
 		$externalMountPoints = array();
 		foreach($mounts as $mount){

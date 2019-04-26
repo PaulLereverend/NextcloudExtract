@@ -25,13 +25,27 @@ $(document).ready(function () {
                             shareOwner : context.fileList.dirInfo.shareOwnerId 
                         };
                     }
+                    var tr = context.fileList.findFileEl(filename);
+				    context.fileList.showFileBusyState(tr, true);
                     $.ajax({
                         type: "POST",
                         async: "false",
                         url: OC.filePath('extract', 'ajax','extractHere.php'),
                         data: data,
-                        success: function() {
-                            context.fileList.reload();
+                        success: function(element) {
+                            element = element.replace(/null/g, '');
+                            response = JSON.parse(element);
+                            //console.log("ok");
+                            //console.log(response);
+                            if(response.code == 1){
+                                context.fileList.reload();
+                            }else{
+                                context.fileList.showFileBusyState(tr, false);
+                                OC.dialogs.alert(
+                                    t('extract', response.desc),
+                                    t('extract', 'Error extracting '+filename)
+                                );
+                            }
                         }
                     });
 				}
@@ -67,15 +81,27 @@ $(document).ready(function () {
                         async: "false",
                         url: OC.filePath('extract', 'ajax','extractRar.php'),
                         data: data,
-                        success: function() {
-                            context.fileList.reload();
+                        success: function(element) {
+                            element = element.replace(/null/g, '');
+                            console.log(element);
+                            response = JSON.parse(element);
+                            if(response.code == 1){
+                                context.fileList.reload();
+                            }else{
+                                context.fileList.showFileBusyState(tr, false);
+                                OC.dialogs.alert(
+                                    t('extract', response.desc),
+                                    t('extract', 'Error extracting '+filename)
+                                );
+                            }
                         }
                     });
 				}
             }); 
             // TAR
             //'application/x-tar', 'application/x-7z-compressed'
-            var types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
+            var types = [];
+            //var types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
             types.forEach(type => {
                 OCA.Files.fileActions.registerAction({
                     name: 'extractOthers',
@@ -106,8 +132,18 @@ $(document).ready(function () {
                             async: "false",
                             url: OC.filePath('extract', 'ajax','extractOthers.php'),
                             data: data,
-                            success: function() {
-                                context.fileList.reload();
+                            success: function(element) {
+                                element = element.replace('null', '');
+                                response = JSON.parse(element);
+                                if(response.code == 1){
+                                    context.fileList.reload();
+                                }else{
+                                    context.fileList.showFileBusyState(tr, false);
+                                    OC.dialogs.alert(
+                                        t('extract', response.desc),
+                                        t('extract', 'Error extracting '+filename)
+                                    );
+                                }
                             }
                         });
                     }
