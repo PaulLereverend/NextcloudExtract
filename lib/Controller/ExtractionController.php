@@ -160,27 +160,50 @@ class ExtractionController extends Controller {
 	* @NoAdminRequired
 	*/
 	public function extractHereOthers($nameOfFile, $directory, $external, $shareOwner = null) {
+		$response = array();
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
 			foreach($externalMountPoints as $externalMP){
 				if (file_exists($externalMP.$directory."/".$nameOfFile)){
-					exec("7z -y x '".$externalMP.$directory."/".$nameOfFile."' -o'".$externalMP.$directory."/".pathinfo($nameOfFile)['filename']."/'");
-					echo "ok";
-					echo "7z -y x '".$externalMP.$directory."/".$nameOfFile."' -o'".$externalMP.$directory."/".pathinfo($nameOfFile)['filename']."/'";
-					return;
+					exec("7za -y x '".$externalMP.$directory."/".$nameOfFile."' -o'".$externalMP.$directory."/".pathinfo($nameOfFile)['filename']."/'", $output,$return);
+					$response = array_merge($response, array("code" => 1));
+					return json_encode($response);
 				}
 			}
-			echo "ko";
+			if(sizeof($output) <= 5){
+				if (file_exists($file)){
+					$response = array_merge($response, array("code" => 0, "desc" => "p7zip and p7zip-full are not installed or available"));
+					return json_encode($response);
+				}else{
+					$response = array_merge($response, array("code" => 0, "desc" => "Can't find archive at ".$file));
+					return json_encode($response);
+				}
+			}
+
+			$response = array_merge($response, array("code" => 0, "desc" => "Can't find archive on external local storage"));
+			return json_encode($response);
 		}else{
 			if ($shareOwner != null){
 				$this->UserId = $shareOwner;
 			}
-
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
-			exec("7z -y x '".$file."' -o'".$dir."' ");
-			echo "7z -y x '".$file."' -o'".$dir."' ";
-			self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename']);
+			exec("7za -y x '".$file."' -o'".$dir."' ",$output,$return);
+			if(sizeof($output) <= 5){
+				if (file_exists($file)){
+					$response = array_merge($response, array("code" => 0, "desc" => "p7zip and p7zip-full are not installed or available"));
+					return json_encode($response);
+				}else{
+					$response = array_merge($response, array("code" => 0, "desc" => "Can't find archive at ".$file));
+					return json_encode($response);
+				}
+			}
+			$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename']);
+			if($scan != 1){
+				return $scan;
+			}
+			$response = array_merge($response, array("code" => 1));
+			return json_encode($response);
 		}
 	}
 	public function scanFolder($path)

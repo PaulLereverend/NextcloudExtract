@@ -100,8 +100,8 @@ $(document).ready(function () {
             }); 
             // TAR
             //'application/x-tar', 'application/x-7z-compressed'
-            var types = [];
-            //var types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
+            //var types = [];
+            var types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
             types.forEach(type => {
                 OCA.Files.fileActions.registerAction({
                     name: 'extractOthers',
