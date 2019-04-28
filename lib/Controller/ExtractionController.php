@@ -39,8 +39,7 @@ class ExtractionController extends Controller {
 	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
 		if (!extension_loaded ("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => "Zip extension is not available"));
-			echo json_encode($response);
-			return;
+			return json_encode($response);
 		}	
 		$zip = new ZipArchive();
 		$response = array();
@@ -51,8 +50,7 @@ class ExtractionController extends Controller {
 					$zip->extractTo($externalMP.$directory.'/');
 					$zip->close();
 					$response = array_merge($response, array("code" => 1));
-					echo json_encode($response);
-					return;
+					return json_encode($response);
 				}
 			}
 			$response = array_merge($response, array("code" => 0, "desc" => "Can't find zip file"));
@@ -63,8 +61,9 @@ class ExtractionController extends Controller {
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
 				for($i = 0; $i < $zip->numFiles; $i++) {
 					$zip->extractTo($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory, array($zip->getNameIndex($i)));
-					if(!self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i))){
-						return;
+					$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i));
+					if(!$scan){
+						return $scan;
 					}
 				}
 				$zip->close();
@@ -73,7 +72,7 @@ class ExtractionController extends Controller {
 				$response = array_merge($response, array("code" => 0, "desc" => "Can't open zip file at ".$this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile));
 			}
 		}
-		echo json_encode($response);
+		return json_encode($response);
 	}
 	/**
 	* @NoAdminRequired
@@ -93,22 +92,22 @@ class ExtractionController extends Controller {
 						}
 						rar_close($rar_file);
 						$response = array_merge($response, array("code" => 1));
-						echo json_encode($response);
+						return json_encode($response);
 					}else{
 							exec("unrar x '".$externalMP.$directory."/".$nameOfFile."' -R '".$externalMP.$directory."' -o+",$output,$return);
 							if (sizeof($output) == 0){
 								$response = array_merge($response, array("code" => 0, "desc" => "rar extension or unrar is not installed or available"));
-								echo json_encode($response);
+								return json_encode($response);
 							}else{
 								$response = array_merge($response, array("code" => 1));
-								echo json_encode($response);
+								return json_encode($response);
 							}
 					}	
 					return;
 				}
 			}
 			$response = array_merge($response, array("code" => 0, "desc" => "Can't find rar file"));
-			echo json_encode($response);
+			return json_encode($response);
 		}else{
 			if ($shareOwner != null){
 				$this->UserId = $shareOwner;
@@ -121,39 +120,38 @@ class ExtractionController extends Controller {
 				foreach($list as $fileOpen) {
 					$entry = rar_entry_get($rar_file, $fileOpen->getName());
 					$entry->extract($dir); // extract to the current dir
-					if(!self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName())){
-						return;
+					$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName());
+					if(!$scan){
+						return $scan;
 					}
 				}
 				rar_close($rar_file); 
 				$response = array_merge($response, array("code" => 1));
-				echo json_encode($response);
-				return;
+				return json_encode($response);
 
 			}else{
 				exec("unrar x \"".$file."\" -R \"".$dir."\" -o+",$output,$return);
 				if(sizeof($output) <= 4){
 					if (file_exists($file)){
 						$response = array_merge($response, array("code" => 0, "desc" => "rar extension or unrar is not installed or available"));
-						echo json_encode($response);
+						return json_encode($response);
 					}else{
 						$response = array_merge($response, array("code" => 0, "desc" => "Can't find rar file at ".$file));
-						echo json_encode($response);
+						return json_encode($response);
 					}
-					return;
 				}else{
 					foreach ($output as $val) {
 						if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" && 
 						preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
 							$fichier = substr(strrchr($PATH, "/"), 1);
-							if(!self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier)){
-								return;
-							}
+							$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
+							if(!$scan){
+								return $scan;
+							}	
 						}
 					}
 					$response = array_merge($response, array("code" => 1));
-					echo json_encode($response);
-					return;
+					return json_encode($response);
 				}
 			}
 		}
@@ -195,16 +193,13 @@ class ExtractionController extends Controller {
             $scanner->scan($path, $recusive = false);
         } catch (ForbiddenException $e) {
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
-			echo json_encode($response);
-			return 0;
+			return json_encode($response);
         }catch (NotFoundException $e){
 			$response = array_merge($response, array("code" => 0, "desc" => "Can't scan file at ".$path));
-			echo json_encode($response);
-			return 0;
+			return json_encode($response);
 		}catch (\Exception $e){
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
-			echo json_encode($response);
-			return 0;
+			return json_encode($response);
 		}
 		return 1;
 	}
