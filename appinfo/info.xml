@@ -5,7 +5,7 @@
     <name>Extract</name>
     <summary>Extract archive from the web interface</summary>
     <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudExtract/master/img/extract.png</screenshot>
-    <description><![CDATA[Extract zip and rar archive.
+    <description><![CDATA[Extract archives.
 
 *  **Supported :** 
 
@@ -26,10 +26,10 @@
     * **AND**
     * p7zip (sudo apt-get install p7zip p7zip-full)
 
-*  **Note :** Tar.gz will be added in the next version
+*  **Note :** Encrypted files are not supported yet
 ]]></description>
 
-    <version>1.1.5</version>
+    <version>1.2.0</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
     <namespace>Extract</namespace>
