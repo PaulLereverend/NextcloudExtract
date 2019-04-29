@@ -29,7 +29,7 @@ class ExtractionController extends Controller {
 	 *          basically the only required method to add this exemption, don't
 	 *          add it to any other method if you don't exactly know what it does
 	 *
-	 * 
+	 *
 	 * @NoCSRFRequired
 	 */
     /**
@@ -40,7 +40,7 @@ class ExtractionController extends Controller {
 		if (!extension_loaded ("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => "Zip extension is not available"));
 			return json_encode($response);
-		}	
+		}
 		$zip = new ZipArchive();
 		$response = array();
 		if ($external){
@@ -88,13 +88,13 @@ class ExtractionController extends Controller {
 						$list = rar_list($rar_file);
 						foreach($list as $file) {
 							$entry = rar_entry_get($rar_file, $file->getName());
-							$entry->extract($externalMP.$directory.'/'); 
+							$entry->extract($externalMP.$directory.'/');
 						}
 						rar_close($rar_file);
 						$response = array_merge($response, array("code" => 1));
 						return json_encode($response);
 					}else{
-							exec("unrar x '".$externalMP.$directory."/".$nameOfFile."' -R '".$externalMP.$directory."' -o+",$output,$return);
+							exec('unrar x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -R ' .escapeshellarg($externalMP.$directory). ' -o+',$output,$return);
 							if (sizeof($output) == 0){
 								$response = array_merge($response, array("code" => 0, "desc" => "rar extension or unrar is not installed or available"));
 								return json_encode($response);
@@ -102,7 +102,7 @@ class ExtractionController extends Controller {
 								$response = array_merge($response, array("code" => 1));
 								return json_encode($response);
 							}
-					}	
+					}
 					return;
 				}
 			}
@@ -125,12 +125,12 @@ class ExtractionController extends Controller {
 						return $scan;
 					}
 				}
-				rar_close($rar_file); 
+				rar_close($rar_file);
 				$response = array_merge($response, array("code" => 1));
 				return json_encode($response);
 
 			}else{
-				exec("unrar x \"".$file."\" -R \"".$dir."\" -o+",$output,$return);
+				exec('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($dir). ' -o+',$output,$return);
 				if(sizeof($output) <= 4){
 					if (file_exists($file)){
 						$response = array_merge($response, array("code" => 0, "desc" => "rar extension or unrar is not installed or available"));
@@ -141,13 +141,13 @@ class ExtractionController extends Controller {
 					}
 				}else{
 					foreach ($output as $val) {
-						if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" && 
+						if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" &&
 						preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
 							$fichier = substr(strrchr($PATH, "/"), 1);
 							$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
 							if(!$scan){
 								return $scan;
-							}	
+							}
 						}
 					}
 					$response = array_merge($response, array("code" => 1));
@@ -165,7 +165,7 @@ class ExtractionController extends Controller {
 			$externalMountPoints = $this->getExternalMP();
 			foreach($externalMountPoints as $externalMP){
 				if (file_exists($externalMP.$directory."/".$nameOfFile)){
-					exec("7za -y x '".$externalMP.$directory."/".$nameOfFile."' -o'".$externalMP.$directory."/".pathinfo($nameOfFile)['filename']."/'", $output,$return);
+					exec('7za -y x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -o' .escapeshellarg($externalMP.$directory. '/' .pathinfo($nameOfFile)['filename']. '/'), $output,$return);
 					$response = array_merge($response, array("code" => 1));
 					return json_encode($response);
 				}
@@ -188,7 +188,7 @@ class ExtractionController extends Controller {
 			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
-			exec("7za -y x '".$file."' -o'".$dir."' ",$output,$return);
+			exec('7za -y x ' .escapeshellarg($file). ' -o' .escapeshellarg($dir),$output,$return);
 			if(sizeof($output) <= 5){
 				if (file_exists($file)){
 					$response = array_merge($response, array("code" => 0, "desc" => "p7zip and p7zip-full are not installed or available"));
@@ -235,5 +235,5 @@ class ExtractionController extends Controller {
 			}
 		}
 		return $externalMountPoints;
-	} 
+	}
 }
