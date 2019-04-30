@@ -13,15 +13,24 @@ Place this app in **nextcloud/apps/**
 
 ## Requirements
 
-* Rar PHP extension
-* p7zip 
+* Rar PHP extension 
+```bash
+pecl -v install rar ## or ## sudo apt-get install unrar
+```
 
-## Steps to install 7zip on Linux &raquo; Ubuntu and Fedora or CentOS / RHEL
+* p7zip and p7zip-full 
+
+## Steps to install p7zip on Linux &raquo; Ubuntu and Fedora or CentOS / RHEL
+
+#### MacOS
+
+```bash
+brew install p7zip
+```
 
 #### Ubuntu
 
 ```bash
-pecl -v install rar ## or ## sudo apt-get install unrar
 sudo apt-get install p7zip p7zip-full
 ```
 
