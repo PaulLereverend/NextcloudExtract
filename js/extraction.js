@@ -5,7 +5,7 @@ $(document).ready(function () {
             var self = this;
 			OCA.Files.fileActions.registerAction({
 				name: 'extractzip',
-				displayName: 'Extract here',
+				displayName: t('extract', 'Extract here'),
 				mime: 'application/zip',
 				permissions: OC.PERMISSION_UPDATE,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
@@ -52,7 +52,7 @@ $(document).ready(function () {
             // RAR
             OCA.Files.fileActions.registerAction({
 				name: 'extractrar',
-				displayName: 'Extract here',
+				displayName: t('extract', 'Extract here'),
 				mime: 'application/x-rar-compressed',
 				permissions: OC.PERMISSION_UPDATE,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
@@ -103,7 +103,7 @@ $(document).ready(function () {
             types.forEach(type => {
                 OCA.Files.fileActions.registerAction({
                     name: 'extractOthers',
-                    displayName: 'Extract here',
+                    displayName: t('extract', 'Extract here'),
                     mime: type,
                     permissions: OC.PERMISSION_UPDATE,
                     type: OCA.Files.FileActions.TYPE_DROPDOWN,
