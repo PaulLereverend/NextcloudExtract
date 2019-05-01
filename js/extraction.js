@@ -2,7 +2,7 @@ $(document).ready(function () {
 
 	var actionsExtract = {
 		init: function () {
-			var self = this;
+            var self = this;
 			OCA.Files.fileActions.registerAction({
 				name: 'extractzip',
 				displayName: 'Extract here',
@@ -35,8 +35,6 @@ $(document).ready(function () {
                         success: function(element) {
                             element = element.replace(/null/g, '');
                             response = JSON.parse(element);
-                            //console.log("ok");
-                            //console.log(response);
                             if(response.code == 1){
                                 context.fileList.reload();
                             }else{
@@ -56,7 +54,7 @@ $(document).ready(function () {
 				name: 'extractrar',
 				displayName: 'Extract here',
 				mime: 'application/x-rar-compressed',
-				permissions: OC.PERMISSION_READ,
+				permissions: OC.PERMISSION_UPDATE,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
 				iconClass: 'icon-extract',
 				actionHandler: function (filename, context) {
@@ -107,7 +105,7 @@ $(document).ready(function () {
                     name: 'extractOthers',
                     displayName: 'Extract here',
                     mime: type,
-                    permissions: OC.PERMISSION_READ,
+                    permissions: OC.PERMISSION_UPDATE,
                     type: OCA.Files.FileActions.TYPE_DROPDOWN,
                     iconClass: 'icon-extract',
                     actionHandler: function (filename, context) {

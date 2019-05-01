@@ -166,20 +166,15 @@ class ExtractionController extends Controller {
 			foreach($externalMountPoints as $externalMP){
 				if (file_exists($externalMP.$directory."/".$nameOfFile)){
 					exec('7za -y x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -o' .escapeshellarg($externalMP.$directory. '/' .pathinfo($nameOfFile)['filename']. '/'), $output,$return);
-					$response = array_merge($response, array("code" => 1));
-					return json_encode($response);
+					if(sizeof($output) <= 5){
+						$response = array_merge($response, array("code" => 0, "desc" => "p7zip and p7zip-full are not installed or available"));
+						return json_encode($response);
+					}else{
+						$response = array_merge($response, array("code" => 1));
+						return json_encode($response);
+					}
 				}
 			}
-			if(sizeof($output) <= 5){
-				if (file_exists($file)){
-					$response = array_merge($response, array("code" => 0, "desc" => "p7zip and p7zip-full are not installed or available"));
-					return json_encode($response);
-				}else{
-					$response = array_merge($response, array("code" => 0, "desc" => "Can't find archive at ".$file));
-					return json_encode($response);
-				}
-			}
-
 			$response = array_merge($response, array("code" => 0, "desc" => "Can't find archive on external local storage"));
 			return json_encode($response);
 		}else{
