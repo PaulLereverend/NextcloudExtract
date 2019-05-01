@@ -5,7 +5,7 @@ $(document).ready(function () {
 			var self = this;
 			OCA.Files.fileActions.registerAction({
 				name: 'extractzip',
-				displayName: 'Extract here',
+				displayName: t('extract', 'Extract here'),
 				mime: 'application/zip',
 				permissions: OC.PERMISSION_UPDATE,
 				type: OCA.Files.FileActions.TYPE_DROPDOWN,
