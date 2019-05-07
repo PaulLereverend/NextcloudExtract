@@ -1,7 +1,7 @@
 { "translations": {
     "Extract here" : "Hier Entpacken",
-    "Error extracting " : "Fehlen beim entpacken",
+    "Error extracting" : "Fehler beim Entpacken",
     "Extract" : "Entpacke",
-    "Extract archive from the web interface" : "Entpacke Archive aus dem Web Interface"
+    "Extract archive from the web interface" : "Entpack Archive aus dem Web Interface"
 },"pluralForm" :""
 }
