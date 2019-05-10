@@ -189,11 +189,14 @@ class ExtractionController extends Controller {
 				$this->UserId = $shareOwner;
 			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
-			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/';
+			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
+			$scanpath = '/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
 			
 			if (pathinfo(pathinfo(escapeshellarg($nameOfFile))["filename"])["extension"] == "tar"){
+				$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/';
 				$filetar = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
 				$dirtar = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo(pathinfo($nameOfFile)['filename'])['filename'];
+				$scanpath = '/'.$this->UserId.'/files'.$directory.'/'.pathinfo(pathinfo($nameOfFile)['filename'])['filename'];
 				exec('7za -y x ' .escapeshellarg($file). ' -o' .escapeshellarg($dir).'&& 7za -y x ' .escapeshellarg($filetar). ' -o' .escapeshellarg($dirtar), $output,$return);
 				unlink($dir);
 			}else{
@@ -208,7 +211,7 @@ class ExtractionController extends Controller {
 					return json_encode($response);
 				}
 			}
-			$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.pathinfo(pathinfo($nameOfFile)['filename'])['filename']);
+			$scan = self::scanFolder($scanpath);
 			if($scan != 1){
 				return $scan;
 			}
