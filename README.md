@@ -1,6 +1,8 @@
 # Extract
 Place this app in **nextcloud/apps/**
 
+This app does only support local external storage backend
+
 ## Supported
 
 * Zip 
