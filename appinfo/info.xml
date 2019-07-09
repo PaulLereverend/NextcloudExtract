@@ -35,8 +35,8 @@
     <namespace>Extract</namespace>
     <category>files</category>
     <category>tools</category>
-    <website>https://github.com/PaulLereverend/NextcloudExtract/</website>
-    <bugs>https://github.com/PaulLereverend/NextcloudExtract</bugs>
+    <website>https://github.com/PaulLereverend/NextcloudExtract</website>
+    <bugs>https://github.com/PaulLereverend/NextcloudExtract/issues</bugs>
     <dependencies>
         <nextcloud min-version="13" max-version="16"/>
     </dependencies>
