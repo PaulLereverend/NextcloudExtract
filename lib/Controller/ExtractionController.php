@@ -10,17 +10,18 @@ use ZipArchive;
 use Rar;
 use PharData;
 use \OCP\IConfig;
-use OCP\L10N\IFactory;
 use OCP\IL10N;
 
 
 class ExtractionController extends Controller {
 	private $UserId;
 	private $config;
-	public function __construct(IConfig $config,$AppName, IRequest $request, string $UserId){
+	private $l;
+	public function __construct(IConfig $config,$AppName, IRequest $request, string $UserId, IL10N $l){
 		parent::__construct($AppName, $request);
 		$this->config = $config;
 		$this->UserId = $UserId;
+		$this->l = $l;
 		//header("Content-type: application/json");
 	}
 
@@ -38,7 +39,7 @@ class ExtractionController extends Controller {
 	* @NoAdminRequired
 	*/
 
-	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null, IL10N $l) {
+	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
 		if (!extension_loaded ("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Zip extension is not available")));
 			return json_encode($response);
@@ -161,7 +162,7 @@ class ExtractionController extends Controller {
 	/**
 	* @NoAdminRequired
 	*/
-	public function extractHereOthers($nameOfFile, $directory, $external, $shareOwner = null, IL10N $l) {
+	public function extractHereOthers($nameOfFile, $directory, $external, $shareOwner = null) {
 		$response = array();
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();

@@ -1,3 +1,6 @@
+## 1.2.1
+- Add languages
+
 ## 1.2.0
 - Tar, Gzip, 7z, Deb and Bzip2 support
 - Add error messages
