@@ -143,14 +143,11 @@ class ExtractionController extends Controller {
 						return json_encode($response);
 					}
 				}else{
-					foreach ($output as $val) {
-						if(preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[0] == "Extracting" &&
-						preg_split('/ /', $val, -1, PREG_SPLIT_NO_EMPTY)[1] != "from"){
-							$fichier = substr(strrchr($PATH, "/"), 1);
-							$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
-							if(!$scan){
-								return $scan;
-							}
+					foreach ($output as $val) {						
+						$fichier = substr(strrchr($PATH, "/"), 1);
+						$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
+						if(!$scan){
+							return $scan;
 						}
 					}
 					$response = array_merge($response, array("code" => 1));
