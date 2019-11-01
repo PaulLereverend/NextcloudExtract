@@ -117,7 +117,7 @@ class ExtractionController extends Controller {
 			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
-			if (!extension_loaded ("rar")){
+			if (extension_loaded ("rar")){
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
 				foreach($list as $fileOpen) {
@@ -231,8 +231,7 @@ class ExtractionController extends Controller {
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
 			return json_encode($response);
         }catch (NotFoundException $e){
-			$response = array_merge($response, array("code" => 0, "desc" => 
-$this->l->t("Can't scan file at ").$path));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't scan file at ").$path));
 			return json_encode($response);
 		}catch (\Exception $e){
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
