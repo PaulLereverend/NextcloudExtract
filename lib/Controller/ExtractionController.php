@@ -41,7 +41,7 @@ class ExtractionController extends Controller {
 
 	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
 		if (!extension_loaded ("zip")){
-			$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Zip extension is not available")));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Zip extension is not available")));
 			return json_encode($response);
 		}
 		$zip = new ZipArchive();
@@ -56,7 +56,7 @@ class ExtractionController extends Controller {
 					return json_encode($response);
 				}
 			}
-			$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Can't find zip file")));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't find zip file")));
 		}else{
 			if ($shareOwner != null){
 				$this->UserId = $shareOwner;
@@ -72,7 +72,7 @@ class ExtractionController extends Controller {
 				$zip->close();
 				$response = array_merge($response, array("code" => 1));
 			}else{
-				$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Can't open zip file at ").$this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile));
+				$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't open zip file at ").$this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile));
 			}
 		}
 		return json_encode($response);
@@ -99,7 +99,7 @@ class ExtractionController extends Controller {
 					}else{
 							exec('unrar x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -R ' .escapeshellarg($externalMP.$directory). ' -o+',$output,$return);
 							if (sizeof($output) == 0){
-								$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "rar extension or unrar is not installed or available")));
+								$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("rar extension or unrar is not installed or available")));
 								return json_encode($response);
 							}else{
 								$response = array_merge($response, array("code" => 1));
@@ -109,7 +109,7 @@ class ExtractionController extends Controller {
 					return;
 				}
 			}
-			$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Can't find rar file")));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't find rar file")));
 			return json_encode($response);
 		}else{
 			if ($shareOwner != null){
@@ -117,7 +117,7 @@ class ExtractionController extends Controller {
 			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
-			if (extension_loaded ("rar")){
+			if (!extension_loaded ("rar")){
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
 				foreach($list as $fileOpen) {
@@ -136,10 +136,10 @@ class ExtractionController extends Controller {
 				exec('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($dir). ' -o+',$output,$return);
 				if(sizeof($output) <= 4){
 					if (file_exists($file)){
-						$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "rar extension or unrar is not installed or available")));
+						$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("rar extension or unrar is not installed or available")));
 						return json_encode($response);
 					}else{
-						$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Can't find rar file at ").$file));
+						$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't find rar file at ").$file));
 						return json_encode($response);
 					}
 				}else{
@@ -173,7 +173,7 @@ class ExtractionController extends Controller {
 						exec('7za -y x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -o' .escapeshellarg($externalMP.$directory. '/' .pathinfo($nameOfFile)['filename']. '/'), $output,$return);
 					}
 					if(sizeof($output) <= 5){
-						$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "p7zip and p7zip-full are not installed or available")));
+						$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("p7zip and p7zip-full are not installed or available")));
 						return json_encode($response);
 					}else{
 						$response = array_merge($response, array("code" => 1));
@@ -181,7 +181,7 @@ class ExtractionController extends Controller {
 					}
 				}
 			}
-			$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Can't find archive on external local storage")));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't find archive on external local storage")));
 			return json_encode($response);
 		}else{
 			if ($shareOwner != null){
@@ -203,10 +203,10 @@ class ExtractionController extends Controller {
 			}
 			if(sizeof($output) <= 5){
 				if (file_exists($file)){
-					$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "p7zip and p7zip-full are not installed or available")));
+					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("p7zip and p7zip-full are not installed or available")));
 					return json_encode($response);
 				}else{
-					$response = array_merge($response, array("code" => 0, "desc" => $l->t("extract", "Can't find archive at ").$file));
+					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't find archive at ").$file));
 					return json_encode($response);
 				}
 			}
@@ -232,7 +232,7 @@ class ExtractionController extends Controller {
 			return json_encode($response);
         }catch (NotFoundException $e){
 			$response = array_merge($response, array("code" => 0, "desc" => 
-$l->t("extract", "Can't scan file at ").$path));
+$this->l->t("Can't scan file at ").$path));
 			return json_encode($response);
 		}catch (\Exception $e){
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
