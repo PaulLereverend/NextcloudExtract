@@ -117,7 +117,7 @@ class ExtractionController extends Controller {
 			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
-			if (!extension_loaded ("rar")){ //A ENLEVER
+			if (extension_loaded ("rar")){
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
 				foreach($list as $fileOpen) {
