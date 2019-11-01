@@ -1,3 +1,9 @@
+## 1.2.2
+- Update to NC 17
+- Fix languages
+- Fix shared folders
+- Fix rar folder scan
+
 ## 1.2.1
 - Add languages
 
