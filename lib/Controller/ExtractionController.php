@@ -117,7 +117,7 @@ class ExtractionController extends Controller {
 			}
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory;
-			if (extension_loaded ("rar")){
+			if (!extension_loaded ("rar")){ //A ENLEVER
 				$rar_file = rar_open($file);
 				$list = rar_list($rar_file);
 				foreach($list as $fileOpen) {
@@ -144,10 +144,7 @@ class ExtractionController extends Controller {
 					}
 				}else{
 					foreach ($output as $val) {
-						// bug
-						
-						$fichier = substr(strrchr($PATH, "/"), 1);
-						$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier, $this->UserId);
+						$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/', $this->UserId);
 						if(!$scan){
 							return $scan;
 						}
