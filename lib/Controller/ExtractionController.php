@@ -64,7 +64,7 @@ class ExtractionController extends Controller {
 			if ($zip->open($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile) === TRUE) {
 				for($i = 0; $i < $zip->numFiles; $i++) {
 					$zip->extractTo($this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory, array($zip->getNameIndex($i)));
-					$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i));
+					$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$zip->getNameIndex($i), $this->UserId);
 					if(!$scan){
 						return $scan;
 					}
@@ -123,7 +123,7 @@ class ExtractionController extends Controller {
 				foreach($list as $fileOpen) {
 					$entry = rar_entry_get($rar_file, $fileOpen->getName());
 					$entry->extract($dir); // extract to the current dir
-					$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName());
+					$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fileOpen->getName(), $this->UserId);
 					if(!$scan){
 						return $scan;
 					}
@@ -143,9 +143,11 @@ class ExtractionController extends Controller {
 						return json_encode($response);
 					}
 				}else{
-					foreach ($output as $val) {						
+					foreach ($output as $val) {
+						// bug
+						
 						$fichier = substr(strrchr($PATH, "/"), 1);
-						$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier);
+						$scan = self::scanFolder('/'.$this->UserId.'/files'.$directory.'/'.$fichier, $this->UserId);
 						if(!$scan){
 							return $scan;
 						}
@@ -211,7 +213,7 @@ class ExtractionController extends Controller {
 					return json_encode($response);
 				}
 			}
-			$scan = self::scanFolder($scanpath);
+			$scan = self::scanFolder($scanpath, $this->UserId);
 			if($scan != 1){
 				return $scan;
 			}
@@ -219,12 +221,13 @@ class ExtractionController extends Controller {
 			return json_encode($response);
 		}
 	}
-	public function scanFolder($path)
+	public function scanFolder($path, $user)
     {
 		$response = array();
-        $user = \OC::$server->getUserSession()->getUser()->getUID();
+		/*if($user == null){
+			$user = \OC::$server->getUserSession()->getUser()->getUID();
+		}*/
 		$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(), \OC::$server->getLogger());
-
 		try {
             $scanner->scan($path, $recusive = false);
         } catch (ForbiddenException $e) {
