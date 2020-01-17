@@ -11,6 +11,7 @@ use Rar;
 use PharData;
 use \OCP\IConfig;
 use OCP\IL10N;
+use OCP\EventDispatcher\IEventDispatcher;
 
 
 class ExtractionController extends Controller {
@@ -40,6 +41,14 @@ class ExtractionController extends Controller {
 	*/
 
 	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
+		if (preg_match('/(\/|^)\.\.(\/|$)/', $nameOfFile)) {
+			$response = ['code' => 0, 'desc' => 'Can\'t find zip file'];
+			return json_encode($response);
+		 }
+		 if (preg_match('/(\/|^)\.\.(\/|$)/', $directory)) {
+			$response = ['code' => 0, 'desc' => 'Can\'t open zip file at directory'];
+			return json_encode($response);
+		 }
 		if (!extension_loaded ("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Zip extension is not available")));
 			return json_encode($response);
@@ -81,6 +90,14 @@ class ExtractionController extends Controller {
 	* @NoAdminRequired
 	*/
 	public function extractHereRar($nameOfFile, $directory, $external, $shareOwner = null) {
+		if (preg_match('/(\/|^)\.\.(\/|$)/', $nameOfFile)) {
+			$response = ['code' => 0, 'desc' => 'Can\'t find zip file'];
+			return json_encode($response);
+		 }
+		 if (preg_match('/(\/|^)\.\.(\/|$)/', $directory)) {
+			$response = ['code' => 0, 'desc' => 'Can\'t open zip file at directory'];
+			return json_encode($response);
+		 }
 		$response = array();
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
@@ -159,6 +176,14 @@ class ExtractionController extends Controller {
 	* @NoAdminRequired
 	*/
 	public function extractHereOthers($nameOfFile, $directory, $external, $shareOwner = null) {
+		if (preg_match('/(\/|^)\.\.(\/|$)/', $nameOfFile)) {
+			$response = ['code' => 0, 'desc' => 'Can\'t find zip file'];
+			return json_encode($response);
+		 }
+		 if (preg_match('/(\/|^)\.\.(\/|$)/', $directory)) {
+			$response = ['code' => 0, 'desc' => 'Can\'t open zip file at directory'];
+			return json_encode($response);
+		 }
 		$response = array();
 		if ($external){
 			$externalMountPoints = $this->getExternalMP();
@@ -190,7 +215,6 @@ class ExtractionController extends Controller {
 			$file = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.$nameOfFile;
 			$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
 			$scanpath = '/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
-			
 			if (pathinfo(pathinfo(escapeshellarg($nameOfFile))["filename"])["extension"] == "tar"){
 				$dir = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/';
 				$filetar = $this->config->getSystemValue('datadirectory', '').'/'.$this->UserId.'/files'.$directory.'/'.pathinfo($nameOfFile)['filename'];
@@ -224,7 +248,11 @@ class ExtractionController extends Controller {
 		/*if($user == null){
 			$user = \OC::$server->getUserSession()->getUser()->getUID();
 		}*/
-		$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(), \OC::$server->getLogger());
+		// For future improvements
+		/*$view = new \OC\Files\View($path);
+		$mount = $view->getMount($path);
+		$scanner = $mount->getStorage()->getScanner();*/
+		$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(),\OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
 		try {
             $scanner->scan($path, $recusive = false);
         } catch (ForbiddenException $e) {
