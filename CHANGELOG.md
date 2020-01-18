@@ -1,4 +1,4 @@
-## 1.2.2
+## 1.2.3
 
 - Update to NC 18
 - Fix security issues
