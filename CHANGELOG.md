@@ -1,3 +1,7 @@
+## 1.2.4
+
+- Update to NC 19
+
 ## 1.2.3
 
 - Update to NC 18
