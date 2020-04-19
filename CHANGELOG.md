@@ -1,6 +1,7 @@
 ## 1.2.4
 
 - Update to NC 19
+- Add debug infos
 
 ## 1.2.3
 
