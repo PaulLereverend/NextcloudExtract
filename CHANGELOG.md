@@ -2,6 +2,7 @@
 
 - Update to NC 19
 - Add debug infos
+- Remove accidently shipped phpunit
 
 ## 1.2.3
 
