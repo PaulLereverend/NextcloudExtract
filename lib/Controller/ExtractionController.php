@@ -116,7 +116,7 @@ class ExtractionController extends Controller {
 					}else{
 							exec('unrar x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -R ' .escapeshellarg($externalMP.$directory). ' -o+',$output,$return);
 							if (sizeof($output) == 0){
-								$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("rar extension or unrar is not installed or available \n
+								$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("rar extension or unrar is not installed or available\n
 								DEBUG(".$return.")".$output)));
 								return json_encode($response);
 							}else{
