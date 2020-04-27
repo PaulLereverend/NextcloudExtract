@@ -116,7 +116,7 @@ class ExtractionController extends Controller {
 					}else{
 							exec('unrar x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -R ' .escapeshellarg($externalMP.$directory). ' -o+',$output,$return);
 							if (sizeof($output) == 0){
-								$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("rar extension or unrar is not installed or available \n
+								$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("rar extension or unrar is not installed or available\n
 								DEBUG(".$return.")".$output)));
 								return json_encode($response);
 							}else{
@@ -200,7 +200,7 @@ class ExtractionController extends Controller {
 						exec('7za -y x ' .escapeshellarg($externalMP.$directory. '/' .$nameOfFile). ' -o' .escapeshellarg($externalMP.$directory. '/' .pathinfo($nameOfFile)['filename']. '/'), $output,$return);
 					}
 					if(sizeof($output) <= 5){
-						$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("p7zip extension and p7zip-full are not installed or available\n
+						$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("p7zip extension or p7zip-full are not installed or available\n
 						DEBUG(".$return.")".$output)));
 						return json_encode($response);
 					}else{
@@ -230,7 +230,7 @@ class ExtractionController extends Controller {
 			}
 			if(sizeof($output) <= 5){
 				if (file_exists($file)){
-					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("p7zip extension and p7zip-full are not installed or available\n
+					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("p7zip extension or p7zip-full are not installed or available\n
 					DEBUG(".$return.")".$output)));
 					return json_encode($response);
 				}else{
