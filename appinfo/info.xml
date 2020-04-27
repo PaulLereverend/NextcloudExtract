@@ -19,7 +19,7 @@
 
 *  **Requirements :** 
     * Rar PHP extension  (pecl -v install rar)
-    
+
     * **OR** 
     * unrar (sudo apt-get install unrar)
 
