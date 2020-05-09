@@ -16,6 +16,7 @@ OC.L10N.register(
     "Can't find archive at " : "在以下位置不能找到压缩文件",
     "Can't scan file at " : "不能扫描此文件",
     "Extract" : "解压",
-    "Extract archive from the web interface" : "从网页界面解压压缩包"
+    "Extract archive from the web interface" : "从网页界面解压压缩包",
+    "Extract archives.\n\n*  **Supported :** \n\n    * Zip \n    * Rar\n    * Tar\n    * Gzip\n    * 7z\n    * Deb\n    * Bzip2\n\n*  **Requirements :** \n    * Rar PHP extension  (pecl -v install rar)\n    \n    * **OR** \n    * unrar (sudo apt-get install unrar)\n\n    * **AND**\n    * p7zip (sudo apt-get install p7zip p7zip-full)\n\n*  **Note :** Encrypted files are not supported yet" : "提取档案。\n\n*  **支持的 ：** \n\n    * Zip \n    * Rar\n    * Tar\n    * Gzip\n    * 7z\n    * Deb\n    * Bzip2\n\n*  **要求 ：** \n    * Rar PHP 扩展  (pecl -v install rar)\n    \n    * **或** \n    * unrar (sudo apt-get install unrar)\n\n    * **及**\n    * p7zip (sudo apt-get install p7zip p7zip-full)\n\n*  **注意：** 尚不支持加密文件"
 },
 "nplurals=1; plural=0;");
