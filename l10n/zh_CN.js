@@ -3,9 +3,9 @@ OC.L10N.register(
     {
     "Extract here" : "解压到这里",
     "Error extracting " : "解压失败",
-    "Zip extension is not available" : "Zip扩展是不可用的",
+    "Zip extension is not available" : "Zip 扩展不可用",
     "Can't find zip file" : "找不到zip文件",
-    "Can't open zip file at " : "不能打开zip文件",
+    "Can't open zip file at " : "不能打开此 zip 文件",
     "rar extension or unrar is not installed or available \n\n\t\t\t\t\t\t\t\tDEBUG(" : "rar 扩展或 unrar 没有安装或不可用\n\n\t\t\t\t\t\t\t\t调试（",
     "Can't find rar file" : "找不到rar文件",
     "rar extension or unrar is not installed or available\n\n\t\t\t\t\t\tDEBUG(" : "rar 扩展或 unrar 没有安装或不可用\n\n\t\t\t\t\t\t\t\t调试（",
