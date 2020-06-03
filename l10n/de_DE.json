@@ -5,7 +5,7 @@
     "Can't find zip file" : "Zip-Datei kann nicht gefunden werden",
     "Can't open zip file at " : "Zip-Datei kann nicht gefunden werden unter",
     "rar extension or unrar is not installed or available \n\n\t\t\t\t\t\t\t\tDEBUG(" : "Rar/Unrar-Erweiterung ist nicht installiert/verfügbar\n\n\t\t\t\t\t\t\t\tDEBUG(",
-    "Can't find rar file" : "Rar-Datei kann nicht gefunden werden",
+    "Can't find rar file" : "Rar-Datei nicht gefunden",
     "rar extension or unrar is not installed or available\n\n\t\t\t\t\t\tDEBUG(" : "Rar/Unrar-Erweiterung ist nicht installiert/verfügbar\n\n\t\t\t\t\t\tDEBUG(",
     "Can't find rar file at " : "Rar-Datei konnte nicht gefunden werden unter",
     "p7zip and p7zip-full are not installed or available\n\n\t\t\t\t\t\tDEBUG(" : "P7zip/P7zip-full ist nicht installiert/verfügbar\n\n\t\t\t\t\t\tDEBUG(",
