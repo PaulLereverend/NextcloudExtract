@@ -38,7 +38,7 @@
     <website>https://github.com/PaulLereverend/NextcloudExtract</website>
     <bugs>https://github.com/PaulLereverend/NextcloudExtract/issues</bugs>
     <dependencies>
-        <nextcloud min-version="13" max-version="19"/>
+        <nextcloud min-version="13" max-version="21"/>
         <owncloud min-version="10.1.1" max-version="10"/>
     </dependencies>
 </info>

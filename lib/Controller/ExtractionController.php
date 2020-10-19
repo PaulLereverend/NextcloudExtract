@@ -277,7 +277,13 @@ class ExtractionController extends Controller {
 		return 1;
 	}
 	public function getExternalMP(){
-		$mounts = \OC_Mount_Config::getAbsoluteMountPoints($this->UserId);
+		$version = \OC::$server->getConfig()->getSystemValue('version');
+		if((int)substr($version, 0, 2) >= 20){
+			$mounts = \OCA\Files_External\MountConfig::getAbsoluteMountPoints($this->UserId);
+		}else{
+			$mounts = \OC_Mount_Config::getAbsoluteMountPoints($this->UserId);
+		}
+
 		$externalMountPoints = array();
 		foreach($mounts as $mount){
 			if ($mount["backend"] == "Local"){
