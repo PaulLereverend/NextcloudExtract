@@ -12,7 +12,8 @@ use PharData;
 use \OCP\IConfig;
 use OCP\IL10N;
 use OCP\EventDispatcher\IEventDispatcher;
-
+use OC\Files\Filesystem;
+use \OC\Files\Utils\Scanner;
 
 class ExtractionController extends Controller {
 	private $UserId;
@@ -25,6 +26,12 @@ class ExtractionController extends Controller {
 		$this->l = $l;
 		//header("Content-type: application/json");
 	}
+
+
+	public function getFile($directory, $fileName){
+		return Filesystem::getLocalFile($directory . '/' . $fileName);
+	}
+
 
 	/**
 	 * CAUTION: the @Stuff turns off security checks; for this page no admin is
@@ -40,19 +47,73 @@ class ExtractionController extends Controller {
 	* @NoAdminRequired
 	*/
 
+	public function extract($nameOfFile, $directory, $external, $type){
+		
+		switch ($type) {
+			case 'zip':
+				return $this->extractZip($nameOfFile, $directory, $external);
+				break;
+			case 'rar':
+				break;
+			default:
+				break;
+		}
+	}
+	public function extractZip($nameOfFile, $directory, $external){
+		if (!extension_loaded("zip")){
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Zip extension is not available")));
+			return json_encode($response);
+		}
+
+		$file = $this->getFile($directory, $nameOfFile);
+		$dir = dirname($file);
+		$extractTo = $dir . '/' . pathinfo($nameOfFile)['filename'];
+
+		$zip = new ZipArchive();
+		$response = array();
+
+		if (!$zip->open($file) === TRUE){
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't open zip file ")));
+			return json_encode($response);
+		}
+		$zip->extractTo($extractTo);
+		$zip->close();
+
+		// if the file is un external storage
+		error_log(gettype($external));
+
+		if($external){
+			Filesystem::mkdir($directory . '/' . pathinfo($nameOfFile)['filename']);
+
+			//put the temporary file in the external storage
+			/*Filesystem::copy($extractTo, $directory . '/' . pathinfo($file)['filename']);
+			// check that the temporary file is not the same as the new file
+			if(Filesystem::getLocalFolder($extractTo) != $directory . '/' . pathinfo($file)['filename']){
+				$this->delete_files($directory . '/' . pathinfo($file)['filename']);
+			}*/
+		}else{
+			Filesystem::mkdir($directory . '/' . pathinfo($file)['filename']);
+		}
+		$response = array_merge($response, array("code" => 1));
+		//error_log(print_r(json_encode($response), TRUE)); 
+		return json_encode($response);
+	}
 	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
-		if (preg_match('/(\/|^)\.\.(\/|$)/', $nameOfFile)) {
+		/*if (preg_match('/(\/|^)\.\.(\/|$)/', $nameOfFile)) {
 			$response = ['code' => 0, 'desc' => 'Can\'t find zip file'];
 			return json_encode($response);
 		 }
 		 if (preg_match('/(\/|^)\.\.(\/|$)/', $directory)) {
 			$response = ['code' => 0, 'desc' => 'Can\'t open zip file at directory'];
 			return json_encode($response);
-		 }
-		if (!extension_loaded ("zip")){
+		 }*/
+		if (!extension_loaded("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Zip extension is not available")));
 			return json_encode($response);
 		}
+		$file = $this->getFile($directory, $nameOfFile);
+		$dir = dirname($file);
+
 		$zip = new ZipArchive();
 		$response = array();
 		if ($external){
@@ -252,15 +313,11 @@ class ExtractionController extends Controller {
 		/*if($user == null){
 			$user = \OC::$server->getUserSession()->getUser()->getUID();
 		}*/
-		// For future improvements
-		/*$view = new \OC\Files\View($path);
-		$mount = $view->getMount($path);
-		$scanner = $mount->getStorage()->getScanner();*/
 		$version = \OC::$server->getConfig()->getSystemValue('version');
 		 if((int)substr($version, 0, 2) < 18){
-			$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(), \OC::$server->getLogger());
+			$scanner = new Scanner($user, \OC::$server->getDatabaseConnection(), \OC::$server->getLogger());
 		 }else{
-			$scanner = new \OC\Files\Utils\Scanner($user, \OC::$server->getDatabaseConnection(),\OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
+			$scanner = new Scanner($user, \OC::$server->getDatabaseConnection(),\OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
 		 }
 		try {
             $scanner->scan($path, $recusive = false);
@@ -291,5 +348,18 @@ class ExtractionController extends Controller {
 			}
 		}
 		return $externalMountPoints;
+	}
+	public function delete_files($target) {
+		if(is_dir($target)){
+			$files = glob( $target . '*', GLOB_MARK ); //GLOB_MARK adds a slash to directories returned
+	
+			foreach( $files as $file ){
+				delete_files( $file );      
+			}
+	
+			rmdir( $target );
+		} elseif(is_file($target)) {
+			unlink( $target );  
+		}
 	}
 }
