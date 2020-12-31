@@ -14,17 +14,20 @@ use OCP\IL10N;
 use OCP\EventDispatcher\IEventDispatcher;
 use OC\Files\Filesystem;
 use \OC\Files\Utils\Scanner;
+use OCP\Encryption\IManager;
 
 class ExtractionController extends Controller {
-	private $UserId;
-	private $config;
+
+	/** @var IL10N */
 	private $l;
-	public function __construct(IConfig $config,$AppName, IRequest $request, string $UserId, IL10N $l){
+
+	/** @var IManager */
+	protected $encryptionManager;
+
+	public function __construct($AppName, IRequest $request, IL10N $l, IManager $encryptionManager){
 		parent::__construct($AppName, $request);
-		$this->config = $config;
-		$this->UserId = $UserId;
 		$this->l = $l;
-		//header("Content-type: application/json");
+		$this->encryptionManager = $encryptionManager;
 	}
 
 
@@ -48,6 +51,11 @@ class ExtractionController extends Controller {
 	*/
 
 	public function extract($nameOfFile, $directory, $external, $type){
+		if ($this->encryptionManager->isEnabled()) {
+			$response = array();
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Encryption is not supported yet")));
+			return json_encode($response);
+		}
 		$file = $this->getFile($directory, $nameOfFile);
 		$dir = dirname($file);
 		//name of the file without extention
