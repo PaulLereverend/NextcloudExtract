@@ -10,18 +10,8 @@
 return [
     'routes' => [
        [
-            'name' => 'extraction#extractHere',
-            'url'  => 'ajax/extractHere.php',
-            'verb' => 'POST'
-        ],
-        [
-            'name' => 'extraction#extractHereRar',
-            'url'  => 'ajax/extractRar.php',
-            'verb' => 'POST'
-        ],
-        [
-            'name' => 'extraction#extractHereOthers',
-            'url'  => 'ajax/extractOthers.php',
+            'name' => 'extraction#extract',
+            'url'  => 'ajax/extract.php',
             'verb' => 'POST'
         ],
     ]

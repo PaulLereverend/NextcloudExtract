@@ -1,101 +1,86 @@
 $(document).ready(function () {
 
-	var actionsExtract = {
-		init: function () {
+    var actionsExtract = {
+        init: function () {
             var self = this;
-			OCA.Files.fileActions.registerAction({
-				name: 'extractzip',
-				displayName: t('extract', 'Extract here'),
-				mime: 'application/zip',
-				permissions: OC.PERMISSION_UPDATE,
-				type: OCA.Files.FileActions.TYPE_DROPDOWN,
-				iconClass: 'icon-extract',
-				actionHandler: function (filename, context) {
-                    if (context.fileInfoModel.attributes.mountType == "external"){
-                        var data = {
-                            nameOfFile: filename,
-                            directory: '/'+context.dir.split('/').slice(2).join('/'),
-                            external : 1
-                        };
-                    }else{
-                        var data = {
-                            nameOfFile: filename,
-                            directory: context.dir,
-                            external : 0,
-                            shareOwner : context.fileList.dirInfo.shareOwnerId 
-                        };
-                    }
+            OCA.Files.fileActions.registerAction({
+                name: 'extractzip',
+                displayName: t('extract', 'Extract here'),
+                mime: 'application/zip',
+                permissions: OC.PERMISSION_UPDATE,
+                type: OCA.Files.FileActions.TYPE_DROPDOWN,
+                iconClass: 'icon-extract',
+                actionHandler: function (filename, context) {
+                    var data = {
+                        nameOfFile: filename,
+                        directory: context.dir,
+                        external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                        type: 'zip'
+                    };
                     var tr = context.fileList.findFileEl(filename);
-				    context.fileList.showFileBusyState(tr, true);
+                    context.fileList.showFileBusyState(tr, true);
                     $.ajax({
                         type: "POST",
                         async: "false",
-                        url: OC.filePath('extract', 'ajax','extractHere.php'),
+                        url: OC.filePath('extract', 'ajax', 'extract.php'),
                         data: data,
-                        success: function(element) {
+                        success: function (element) {
+                            console.log(element);
                             element = element.replace(/null/g, '');
                             response = JSON.parse(element);
-                            if(response.code == 1){
+                            if (response.code == 1) {
                                 context.fileList.reload();
-                            }else{
+                            } else {
                                 context.fileList.showFileBusyState(tr, false);
                                 OC.dialogs.alert(
                                     t('extract', response.desc),
-                                    t('extract', 'Error extracting '+filename)
+                                    t('extract', 'Error extracting ' + filename)
                                 );
                             }
                         }
                     });
-				}
+                }
             });
 
             // RAR
             OCA.Files.fileActions.registerAction({
-				name: 'extractrar',
-				displayName: t('extract', 'Extract here'),
-				mime: 'application/x-rar-compressed',
-				permissions: OC.PERMISSION_UPDATE,
-				type: OCA.Files.FileActions.TYPE_DROPDOWN,
-				iconClass: 'icon-extract',
-				actionHandler: function (filename, context) {
-                    if (context.fileInfoModel.attributes.mountType == "external"){
-                        var data = {
-                            nameOfFile: filename,
-                            directory: '/'+context.dir.split('/').slice(2).join('/'),
-                            external : 1
-                        };
-                    }else{
-                        var data = {
-                            nameOfFile: filename,
-                            directory: context.dir,
-                            external : 0,
-                            shareOwner : context.fileList.dirInfo.shareOwnerId 
-                        };
-                    }
+                name: 'extractrar',
+                displayName: t('extract', 'Extract here'),
+                mime: 'application/x-rar-compressed',
+                permissions: OC.PERMISSION_UPDATE,
+                type: OCA.Files.FileActions.TYPE_DROPDOWN,
+                iconClass: 'icon-extract',
+                actionHandler: function (filename, context) {
+                    var data = {
+                        nameOfFile: filename,
+                        directory: context.dir,
+                        external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                        type: 'rar'
+                    };
                     var tr = context.fileList.findFileEl(filename);
-				    context.fileList.showFileBusyState(tr, true);
+                    context.fileList.showFileBusyState(tr, true);
                     $.ajax({
                         type: "POST",
                         async: "false",
-                        url: OC.filePath('extract', 'ajax','extractRar.php'),
+                        url: OC.filePath('extract', 'ajax', 'extract.php'),
                         data: data,
-                        success: function(element) {
+                        success: function (element) {
                             element = element.replace(/null/g, '');
                             console.log(element);
                             response = JSON.parse(element);
-                            if(response.code == 1){
+                            if (response.code == 1) {
                                 context.fileList.reload();
-                            }else{
+                            } else {
                                 context.fileList.showFileBusyState(tr, false);
                                 OC.dialogs.alert(
                                     t('extract', response.desc),
-                                    t('extract', 'Error extracting '+filename)
+                                    t('extract', 'Error extracting ' + filename)
                                 );
                             }
                         }
                     });
-				}
-            }); 
+                }
+            });
             // TAR
             //'application/x-tar', 'application/x-7z-compressed'
             //var types = [];
@@ -109,46 +94,38 @@ $(document).ready(function () {
                     type: OCA.Files.FileActions.TYPE_DROPDOWN,
                     iconClass: 'icon-extract',
                     actionHandler: function (filename, context) {
-                        if (context.fileInfoModel.attributes.mountType == "external"){
-                            var data = {
-                                nameOfFile: filename,
-                                directory: '/'+context.dir.split('/').slice(2).join('/'),
-                                external : 1
-                            };
-                        }else{
-                            var data = {
-                                nameOfFile: filename,
-                                directory: context.dir,
-                                external : 0,
-                                shareOwner : context.fileList.dirInfo.shareOwnerId 
-                            };
-                        }
+                        var data = {
+                            nameOfFile: filename,
+                            directory: context.dir,
+                            external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                            type: 'other'
+                        };
                         var tr = context.fileList.findFileEl(filename);
                         context.fileList.showFileBusyState(tr, true);
                         $.ajax({
                             type: "POST",
                             async: "false",
-                            url: OC.filePath('extract', 'ajax','extractOthers.php'),
+                            url: OC.filePath('extract', 'ajax', 'extract.php'),
                             data: data,
-                            success: function(element) {
+                            success: function (element) {
                                 element = element.replace('null', '');
                                 response = JSON.parse(element);
-                                if(response.code == 1){
+                                if (response.code == 1) {
                                     context.fileList.reload();
-                                }else{
+                                } else {
                                     context.fileList.showFileBusyState(tr, false);
                                     OC.dialogs.alert(
                                         t('extract', response.desc),
-                                        t('extract', 'Error extracting '+filename)
+                                        t('extract', 'Error extracting ' + filename)
                                     );
                                 }
                             }
                         });
                     }
-                }); 
+                });
             });
-		},
-	}
-	actionsExtract.init();
+        },
+    }
+    actionsExtract.init();
 });
 
