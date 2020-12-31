@@ -1,3 +1,14 @@
+## 1.3.0
+
+- Better handling of files
+- Improved performances
+- Support group folders
+- Support all external storage methods
+
+## 1.2.5
+
+- Update to NC 20
+
 ## 1.2.4
 
 - Update to NC 19
