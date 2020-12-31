@@ -76,26 +76,20 @@ class ExtractionController extends Controller {
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't open zip file ")));
 			return json_encode($response);
 		}
-		$zip->extractTo($extractTo);
-		$zip->close();
 
 		// if the file is un external storage
-		error_log(gettype($external));
-
 		if($external){
-			Filesystem::mkdir($directory . '/' . pathinfo($nameOfFile)['filename']);
-
-			//put the temporary file in the external storage
-			/*Filesystem::copy($extractTo, $directory . '/' . pathinfo($file)['filename']);
-			// check that the temporary file is not the same as the new file
-			if(Filesystem::getLocalFolder($extractTo) != $directory . '/' . pathinfo($file)['filename']){
-				$this->delete_files($directory . '/' . pathinfo($file)['filename']);
-			}*/
+			$extractTo = Filesystem::getLocalFolder('/') . '/' . pathinfo($nameOfFile)['filename'] . '_extract_tmp';
+			$tmpPath = '/' . pathinfo($nameOfFile)['filename'] . '_extract_tmp';
+			$zip->extractTo($extractTo);
+			Filesystem::mkdir($tmpPath);
+			Filesystem::rename($tmpPath, $directory . '/' . pathinfo($nameOfFile)['filename']);
 		}else{
+			$zip->extractTo($extractTo);
 			Filesystem::mkdir($directory . '/' . pathinfo($file)['filename']);
 		}
+		$zip->close();
 		$response = array_merge($response, array("code" => 1));
-		//error_log(print_r(json_encode($response), TRUE)); 
 		return json_encode($response);
 	}
 	public function extractHere($nameOfFile, $directory, $external, $shareOwner = null) {
@@ -320,12 +314,13 @@ class ExtractionController extends Controller {
 			$scanner = new Scanner($user, \OC::$server->getDatabaseConnection(),\OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
 		 }
 		try {
-            $scanner->scan($path, $recusive = false);
+            error_log($scanner->scan($path, $recusive = true));
         } catch (ForbiddenException $e) {
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
 			return json_encode($response);
         }catch (NotFoundException $e){
-			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't scan file at ").$path));
+			error_log($e);
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't scan file at "). ' ...' . $path));
 			return json_encode($response);
 		}catch (\Exception $e){
 			$response = array_merge($response, array("code" => 0, "desc" => $e));
