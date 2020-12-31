@@ -94,26 +94,18 @@ $(document).ready(function () {
                     type: OCA.Files.FileActions.TYPE_DROPDOWN,
                     iconClass: 'icon-extract',
                     actionHandler: function (filename, context) {
-                        if (context.fileInfoModel.attributes.mountType == "external") {
-                            var data = {
-                                nameOfFile: filename,
-                                directory: '/' + context.dir.split('/').slice(2).join('/'),
-                                external: 1
-                            };
-                        } else {
-                            var data = {
-                                nameOfFile: filename,
-                                directory: context.dir,
-                                external: 0,
-                                shareOwner: context.fileList.dirInfo.shareOwnerId
-                            };
-                        }
+                        var data = {
+                            nameOfFile: filename,
+                            directory: context.dir,
+                            external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                            type: 'other'
+                        };
                         var tr = context.fileList.findFileEl(filename);
                         context.fileList.showFileBusyState(tr, true);
                         $.ajax({
                             type: "POST",
                             async: "false",
-                            url: OC.filePath('extract', 'ajax', 'extractOthers.php'),
+                            url: OC.filePath('extract', 'ajax', 'extract.php'),
                             data: data,
                             success: function (element) {
                                 element = element.replace('null', '');

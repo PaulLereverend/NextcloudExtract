@@ -69,6 +69,7 @@ class ExtractionController extends Controller {
 				$response = $this->extractRar($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
 				break;
 			default:
+				$response = $this->extractOther($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
 				break;
 		}
 
@@ -81,13 +82,14 @@ class ExtractionController extends Controller {
 		return $response;
 	}
 	public function extractZip($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
+		$response = array();
+
 		if (!extension_loaded("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Zip extension is not available")));
 			return json_encode($response);
 		}
 
 		$zip = new ZipArchive();
-		$response = array();
 
 		if (!$zip->open($file) === TRUE){
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't open zip file ")));
@@ -103,7 +105,6 @@ class ExtractionController extends Controller {
 		$response = array();
 
 		if (!extension_loaded("rar")){
-			error_log('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($extractTo). '/ -o+');
 			exec('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($extractTo). '/ -o+',$output,$return);
 				if(sizeof($output) <= 4){
 					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("the rar extension is not available or unrar is not installed\n
@@ -120,6 +121,18 @@ class ExtractionController extends Controller {
 			rar_close($rar_file);
 		}
 
+		$response = array_merge($response, array("code" => 1));
+		return json_encode($response);
+	}
+	public function extractOther($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
+		$response = array();
+		
+		exec('7za -y x ' .escapeshellarg($file). ' -o' .escapeshellarg($extractTo),$output,$return);
+		if(sizeof($output) <= 5){
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("the p7zip extension is not available or p7zip-full is not installed\n
+			DEBUG(".$return.")".$output)));
+			return json_encode($response);
+		}
 		$response = array_merge($response, array("code" => 1));
 		return json_encode($response);
 	}
