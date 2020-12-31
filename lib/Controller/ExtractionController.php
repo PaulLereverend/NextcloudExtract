@@ -48,26 +48,43 @@ class ExtractionController extends Controller {
 	*/
 
 	public function extract($nameOfFile, $directory, $external, $type){
-		
+		$file = $this->getFile($directory, $nameOfFile);
+		$dir = dirname($file);
+		//name of the file without extention
+		$filename = pathinfo($nameOfFile)['filename'];
+		$extractTo = $dir . '/' . $filename;
+		$tmpPath = '/' . $filename . '_extract_tmp';
+		$NCDestination = $directory . '/' . $filename;
+
+		// if the file is un external storage
+		if($external){
+			$extractTo = Filesystem::getLocalFolder('/') . $tmpPath;
+		}
+
 		switch ($type) {
 			case 'zip':
-				return $this->extractZip($nameOfFile, $directory, $external);
+				$response = $this->extractZip($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
 				break;
 			case 'rar':
+				$response = $this->extractRar($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
 				break;
 			default:
 				break;
 		}
+
+		if($external){
+			Filesystem::mkdir($tmpPath);
+			Filesystem::rename($tmpPath, $NCDestination);
+		}else{
+			Filesystem::mkdir($NCDestination);
+		}
+		return $response;
 	}
-	public function extractZip($nameOfFile, $directory, $external){
+	public function extractZip($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
 		if (!extension_loaded("zip")){
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Zip extension is not available")));
 			return json_encode($response);
 		}
-
-		$file = $this->getFile($directory, $nameOfFile);
-		$dir = dirname($file);
-		$extractTo = $dir . '/' . pathinfo($nameOfFile)['filename'];
 
 		$zip = new ZipArchive();
 		$response = array();
@@ -77,18 +94,32 @@ class ExtractionController extends Controller {
 			return json_encode($response);
 		}
 
-		// if the file is un external storage
-		if($external){
-			$extractTo = Filesystem::getLocalFolder('/') . '/' . pathinfo($nameOfFile)['filename'] . '_extract_tmp';
-			$tmpPath = '/' . pathinfo($nameOfFile)['filename'] . '_extract_tmp';
-			$zip->extractTo($extractTo);
-			Filesystem::mkdir($tmpPath);
-			Filesystem::rename($tmpPath, $directory . '/' . pathinfo($nameOfFile)['filename']);
-		}else{
-			$zip->extractTo($extractTo);
-			Filesystem::mkdir($directory . '/' . pathinfo($file)['filename']);
-		}
+		$zip->extractTo($extractTo);
 		$zip->close();
+		$response = array_merge($response, array("code" => 1));
+		return json_encode($response);
+	}
+	public function extractRar($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
+		$response = array();
+
+		if (!extension_loaded("rar")){
+			error_log('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($extractTo). '/ -o+');
+			exec('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($extractTo). '/ -o+',$output,$return);
+				if(sizeof($output) <= 4){
+					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("the rar extension is not available or unrar is not installed\n
+					DEBUG(".$return.")".$output)));
+					return json_encode($response);
+				}
+		}else{
+			$rar_file = rar_open($file);
+			$list = rar_list($rar_file);
+			foreach($list as $archive_file) {
+				$entry = rar_entry_get($rar_file, $archive_file->getName());
+				$entry->extract($extractTo);
+			}
+			rar_close($rar_file);
+		}
+
 		$response = array_merge($response, array("code" => 1));
 		return json_encode($response);
 	}
