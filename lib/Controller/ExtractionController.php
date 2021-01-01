@@ -101,7 +101,7 @@ class ExtractionController extends Controller {
 		$zip = new ZipArchive();
 
 		if (!$zip->open($file) === TRUE){
-			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't open zip file ")));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Can't open Zip file")));
 			return json_encode($response);
 		}
 
