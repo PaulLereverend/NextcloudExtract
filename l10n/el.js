@@ -4,13 +4,6 @@ OC.L10N.register(
     "Extract here" : "Εξαγωγή εδώ",
     "Error extracting " : "Σφάλμα εξαγωγής",
     "Zip extension is not available" : "Η επέκταση zip δεν είναι διαθέσιμη",
-    "Can't find zip file" : "Δεν μπορεί να βρεθεί το αρχείο zip",
-    "Can't open zip file at " : "Δεν μπορεί να ανοίξει το αρχείο zip στο",
-    "Can't find rar file" : "Δεν μπορεί να βρεθεί το αρχείο rar",
-    "Can't find rar file at " : "Δεν μπορεί να ανοίξει το αρχείο rar στο",
-    "Can't find archive on external local storage" : "Δεν βρέθηκε αρχείο ή εξωτερικός αποθηκευτικός χώρος",
-    "Can't find archive at " : "Δεν βρέθηκε αρχείο στο",
-    "Can't scan file at " : "Δεν μπορεί να γίνει σάρωση αρχείου στο",
     "Extract" : "Εξαγωγή",
     "Extract archive from the web interface" : "Εξαγωγή αρχείου από περιηγητή"
 },
