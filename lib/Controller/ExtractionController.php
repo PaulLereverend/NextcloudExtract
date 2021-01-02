@@ -61,8 +61,11 @@ class ExtractionController extends Controller {
 		//name of the file without extention
 		$filename = pathinfo($nameOfFile)['filename'];
 		$extractTo = $dir . '/' . $filename;
-		$tmpPath = '/' . $filename . '_extract_tmp';
-		$NCDestination = $directory . '/' . $filename;
+		$tmpPath = "/extract_tmp/" . $filename ;
+
+		if(pathinfo($filename)['extension'] == "tar"){
+			$tmpPath = '/extract_tmp/' . pathinfo($filename)['filename'];
+		}
 
 		// if the file is un external storage
 		if($external){
@@ -71,26 +74,33 @@ class ExtractionController extends Controller {
 
 		switch ($type) {
 			case 'zip':
-				$response = $this->extractZip($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
+				$response = $this->extractZip($file, $filename, $extractTo);
 				break;
 			case 'rar':
-				$response = $this->extractRar($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
+				$response = $this->extractRar($file, $filename, $extractTo);
 				break;
 			default:
-				$response = $this->extractOther($file, $filename, $extractTo, $NCDestination, $tmpPath, $external);
+				// Check if the file is .tar.gz in order to do the extraction on a single step
+				if(pathinfo($filename)['extension'] == "tar"){
+					$clean_filename = pathinfo($filename)['filename'];
+					$extractTo = dirname($extractTo) . '/' . $clean_filename;
+					$response = $this->extractOther($file, $clean_filename, $extractTo);
+					$file = $extractTo . '/' . $filename;
+					$filename = $clean_filename;
+					$response = $this->extractOther($file, $filename, $extractTo);
+					
+					// remove .tar file
+					unlink($file);
+				}else{
+					$response = $this->extractOther($file, $filename, $extractTo);
+				}
 				break;
 		}
 
-		//Register the new files to the NC filesystem
-		if($external){
-			Filesystem::mkdir($tmpPath);
-			Filesystem::rename($tmpPath, $NCDestination);
-		}else{
-			Filesystem::mkdir($NCDestination);
-		}
+		$this->postExtract($filename, $directory, $tmpPath, $external);
 		return $response;
 	}
-	public function extractZip($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
+	public function extractZip($file, $filename, $extractTo){
 		$response = array();
 
 		if (!extension_loaded("zip")){
@@ -110,7 +120,7 @@ class ExtractionController extends Controller {
 		$response = array_merge($response, array("code" => 1));
 		return json_encode($response);
 	}
-	public function extractRar($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
+	public function extractRar($file, $filename, $extractTo){
 		$response = array();
 
 		if (!extension_loaded("rar")){
@@ -133,16 +143,30 @@ class ExtractionController extends Controller {
 		$response = array_merge($response, array("code" => 1));
 		return json_encode($response);
 	}
-	public function extractOther($file, $filename, $extractTo, $NCDestination, $tmpPath, $external){
+	public function extractOther($file, $filename, $extractTo){
 		$response = array();
-		
+
 		exec('7za -y x ' .escapeshellarg($file). ' -o' .escapeshellarg($extractTo),$output,$return);
+
 		if(sizeof($output) <= 5){
 			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("the p7zip extension is not available or p7zip-full is not installed\n
 			DEBUG(".$return.")".$output)));
+			error_log($output);
+
 			return json_encode($response);
 		}
 		$response = array_merge($response, array("code" => 1));
 		return json_encode($response);
+	}
+
+	//Register the new files to the NC filesystem
+	public function postExtract($filename, $directory, $tmpPath, $external){
+		$NCDestination = $directory . '/' . $filename;
+		if($external){
+			Filesystem::mkdir($tmpPath);
+			Filesystem::rename($tmpPath, $NCDestination);
+		}else{
+			Filesystem::mkdir($NCDestination);
+		}
 	}
 }
