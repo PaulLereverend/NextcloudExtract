@@ -126,8 +126,7 @@ class ExtractionController extends Controller {
 		if (!extension_loaded("rar")){
 			exec('unrar x ' .escapeshellarg($file). ' -R ' .escapeshellarg($extractTo). '/ -o+',$output,$return);
 				if(sizeof($output) <= 4){
-					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("the rar extension is not available or unrar is not installed\n
-					DEBUG(".$return.")".$output)));
+					$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Oops something went wrong. Check that you have rar extension or unrar installed")));
 					return json_encode($response);
 				}
 		}else{
@@ -149,8 +148,7 @@ class ExtractionController extends Controller {
 		exec('7za -y x ' .escapeshellarg($file). ' -o' .escapeshellarg($extractTo),$output,$return);
 
 		if(sizeof($output) <= 5){
-			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("the p7zip extension is not available or p7zip-full is not installed\n
-			DEBUG(".$return.")".$output)));
+			$response = array_merge($response, array("code" => 0, "desc" => $this->l->t("Oops something went wrong. Check that you have p7zip installed")));
 			error_log($output);
 
 			return json_encode($response);
