@@ -63,7 +63,7 @@ class ExtractionController extends Controller {
 		$extractTo = $dir . '/' . $filename;
 		$tmpPath = "/extract_tmp/" . $filename ;
 
-		if(pathinfo($filename)['extension'] == "tar"){
+		if(array_key_exists('extension', pathinfo($filename)) && pathinfo($filename)['extension'] == "tar"){
 			$tmpPath = '/extract_tmp/' . pathinfo($filename)['filename'];
 		}
 
@@ -81,11 +81,11 @@ class ExtractionController extends Controller {
 				break;
 			default:
 				// Check if the file is .tar.gz in order to do the extraction on a single step
-				if(pathinfo($filename)['extension'] == "tar"){
+				if(array_key_exists('extension', pathinfo($filename)) && pathinfo($filename)['extension'] == "tar"){
 					$clean_filename = pathinfo($filename)['filename'];
 					$extractTo = dirname($extractTo) . '/' . $clean_filename;
 					$response = $this->extractOther($file, $clean_filename, $extractTo);
-					$file = $extractTo . '/' . $filename;
+					$file = $extractTo . '/' . pathinfo($file)['filename'];
 					$filename = $clean_filename;
 					$response = $this->extractOther($file, $filename, $extractTo);
 					
@@ -165,6 +165,7 @@ class ExtractionController extends Controller {
 		if($external){
 			Filesystem::mkdir($tmpPath);
 			Filesystem::rename($tmpPath, $NCDestination);
+			Filesystem::rmdir(dirname($tmpPath));
 		}else{
 			Filesystem::mkdir($NCDestination);
 		}
