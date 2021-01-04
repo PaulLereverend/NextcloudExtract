@@ -1,6 +1,7 @@
 { "translations": {
     "Extract here" : "Extrair aqui",
     "Error extracting " : "Erro ao extrair",
+    "Encryption is not supported yet" : "Ainda não há suporte para criptografia",
     "Zip extension is not available" : "extensão zip não está disponível",
     "Extract" : "Extrair",
     "Extract archive from the web interface" : "Extrair arquivo da interface web",
