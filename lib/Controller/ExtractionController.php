@@ -13,7 +13,6 @@ use \OCP\IConfig;
 use OCP\IL10N;
 use OCP\EventDispatcher\IEventDispatcher;
 use OC\Files\Filesystem;
-use \OC\Files\Utils\Scanner;
 use OCP\Encryption\IManager;
 
 class ExtractionController extends Controller {
@@ -24,15 +23,20 @@ class ExtractionController extends Controller {
 	/** @var IManager */
 	protected $encryptionManager;
 
-	public function __construct($AppName, IRequest $request, IL10N $l, IManager $encryptionManager){
+	private $userId;
+
+	public function __construct($AppName, IRequest $request, IL10N $l, IManager $encryptionManager, $UserId){
 		parent::__construct($AppName, $request);
 		$this->l = $l;
 		$this->encryptionManager = $encryptionManager;
+		$this->userId = $UserId;
 	}
 
 
 	public function getFile($directory, $fileName){
-		return Filesystem::getLocalFile($directory . '/' . $fileName);
+		\OC_Util::tearDownFS();
+		\OC_Util::setupFS($this->userId);
+		return Filesystem::getView()->getLocalFile($directory . '/' . $fileName);
 	}
 
 
