@@ -1,3 +1,7 @@
+## 1.3.1
+
+- NC21 support
+
 ## 1.3.0
 
 - Better handling of files
