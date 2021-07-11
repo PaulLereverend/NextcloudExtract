@@ -5,7 +5,6 @@ OC.L10N.register(
     "Error extracting " : "Chyba pri rozbaľovaní",
     "Encryption is not supported yet" : "Šifrovanie ešte nie je implementované",
     "Zip extension is not available" : "Rozšírenie pre zip nie je k dispozícii",
-    "Can't open Zip file" : "Nie je možné otvoriť Zip súbor",
     "Oops something went wrong. Check that you have rar extension or unrar installed" : "Ups, niečo sa pokazilo. Skontrolujte že prípona je rar alebo nainštalujte unrar.",
     "Oops something went wrong. Check that you have p7zip installed" : "Ups, niečo sa pokazilo. Skontrolujte že máte nainštalovaný p7zip",
     "Extract" : "Rozbaliť",

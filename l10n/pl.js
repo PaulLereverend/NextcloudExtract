@@ -5,7 +5,6 @@ OC.L10N.register(
     "Error extracting " : "Błąd podczas wyodrębniania ",
     "Encryption is not supported yet" : "Szyfrowanie nie jest jeszcze obsługiwane",
     "Zip extension is not available" : "Rozszerzenie zip nie jest dostępne",
-    "Can't open Zip file" : "Nie można otworzyć pliku Zip",
     "Oops something went wrong. Check that you have rar extension or unrar installed" : "Ups! Coś poszło nie tak. Sprawdź, czy masz zainstalowane rozszerzenie rar lub unrar",
     "Oops something went wrong. Check that you have p7zip installed" : "Ups! Coś poszło nie tak. Sprawdź, czy masz zainstalowany p7zip",
     "Extract" : "Wyodrębnij",

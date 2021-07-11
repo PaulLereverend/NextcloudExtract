@@ -5,7 +5,6 @@ OC.L10N.register(
     "Error extracting " : "Σφάλμα εξαγωγής",
     "Encryption is not supported yet" : "Η κρυπτογράφηση δεν υποστηρίζεται ακόμη",
     "Zip extension is not available" : "Η επέκταση zip δεν είναι διαθέσιμη",
-    "Can't open Zip file" : "Δεν είναι δυνατό το άνοιγμα του αρχείου Zip",
     "Oops something went wrong. Check that you have rar extension or unrar installed" : "Ωχ! Κάτι πήγε στραβά. Βεβαιωθείτε ότι έχετε εγκαταστήσει επέκταση rar ή unrar.",
     "Oops something went wrong. Check that you have p7zip installed" : "Ωχ! Κάτι πήγε στραβά. Βεβαιωθείτε ότι έχετε εγκαταστήσει το p7zip.",
     "Extract" : "Εξαγωγή",

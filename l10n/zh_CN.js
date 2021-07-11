@@ -5,7 +5,6 @@ OC.L10N.register(
     "Error extracting " : "解压失败",
     "Encryption is not supported yet" : "尚不支持加密",
     "Zip extension is not available" : "Zip 扩展不可用",
-    "Can't open Zip file" : "打不开 Zip 文件",
     "Oops something went wrong. Check that you have rar extension or unrar installed" : "哎呀，出问题了。检查你是否安装了 rar 扩展或 unar",
     "Oops something went wrong. Check that you have p7zip installed" : "哎呀，出问题了。检查你是否安装了 p7zip",
     "Extract" : "解压",

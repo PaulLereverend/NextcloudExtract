@@ -5,7 +5,6 @@ OC.L10N.register(
     "Error extracting " : "Pogreška pri izdvajanju ",
     "Encryption is not supported yet" : "Šifriranje još uvijek nije podržano",
     "Zip extension is not available" : "Nastavak „zip“ nije dostupan",
-    "Can't open Zip file" : "Nije moguće otvoriti datoteku Zip",
     "Oops something went wrong. Check that you have rar extension or unrar installed" : "Ups! Nešto je pošlo po krivu. Provjerite je li instalirano proširenje za datoteke rar ili unrar",
     "Oops something went wrong. Check that you have p7zip installed" : "Ups! Nešto je pošlo po krivu. Provjerite je li instaliran p7zip",
     "Extract" : "Izdvoji",
