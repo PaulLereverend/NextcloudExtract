@@ -5,6 +5,7 @@ OC.L10N.register(
     "Error extracting " : "Ошибка извлечения",
     "Encryption is not supported yet" : "Шифрование пока не поддерживается",
     "Zip extension is not available" : "Расширение zip не доступно",
+    "Cannot open Zip file" : "Невозможно открыть ZIP-файл",
     "Oops something went wrong. Check that you have rar extension or unrar installed" : "Произошла ошибка, проверьте наличие расширения rar или пакета unrar на сервере",
     "Oops something went wrong. Check that you have p7zip installed" : "Произошла ошибка, проверьте наличие модуля p7zip на сервере",
     "Extract" : "Извлечь",
