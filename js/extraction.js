@@ -14,7 +14,7 @@ $(document).ready(function () {
                     var data = {
                         nameOfFile: filename,
                         directory: context.dir,
-                        external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                        external: context.fileInfoModel.attributes.mountType.startsWith("external") ? 1 : 0,
                         type: 'zip'
                     };
                     var tr = context.fileList.findFileEl(filename);
@@ -54,7 +54,7 @@ $(document).ready(function () {
                     var data = {
                         nameOfFile: filename,
                         directory: context.dir,
-                        external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                        external: context.fileInfoModel.attributes.mountType.startsWith("external") ? 1 : 0,
                         type: 'rar'
                     };
                     var tr = context.fileList.findFileEl(filename);
@@ -97,7 +97,7 @@ $(document).ready(function () {
                         var data = {
                             nameOfFile: filename,
                             directory: context.dir,
-                            external: context.fileInfoModel.attributes.mountType == "external" ? 1 : 0,
+                            external: context.fileInfoModel.attributes.mountType.startsWith("external") ? 1 : 0,
                             type: 'other'
                         };
                         var tr = context.fileList.findFileEl(filename);
