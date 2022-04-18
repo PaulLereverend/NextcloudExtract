@@ -3,6 +3,7 @@
     "Error extracting " : "Error d’extraccion",
     "Encryption is not supported yet" : "Lo chiframent es pas encara pres en carga",
     "Zip extension is not available" : "extension Zip pas disponibla",
+    "Cannot open Zip file" : "Dubertura de fichièr Zip impossibla",
     "Extract" : "Traire"
 },"pluralForm" :"nplurals=2; plural=(n > 1);"
 }
