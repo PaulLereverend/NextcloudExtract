@@ -1,3 +1,6 @@
+## 1.3.5
+
+- Fix issue on external storage
 ## 1.3.4
 
 - NC24 support
