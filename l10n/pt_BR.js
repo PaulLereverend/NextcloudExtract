@@ -12,4 +12,4 @@ OC.L10N.register(
     "Extract archive from the web interface" : "Extrair arquivo da interface web",
     "Extract archives.\n\n*  **Supported :** \n\n    * Zip \n    * Rar\n    * Tar\n    * Gzip\n    * 7z\n    * Deb\n    * Bzip2\n\n*  **Requirements :** \n    * Rar PHP extension  (pecl -v install rar)\n\n    * **OR** \n    * unrar (sudo apt-get install unrar)\n\n    * **AND**\n    * p7zip (sudo apt-get install p7zip p7zip-full)\n\n*  **Note :** Encrypted files are not supported yet" : "Extrair arquivos.\n\n*  **Suportados:** \n\n    * Zip \n    * Rar\n    * Tar\n    * Gzip\n    * 7z\n    * Deb\n    * Bzip2\n\n*  **Requerimentos:** \n    * Extensão PHP rar (pecl -v install rar)\n    \n    * **OU** \n    * unrar (sudo apt-get install unrar)\n\n    * **E**\n    * p7zip (sudo apt-get install p7zip p7zip-full)\n\n*  **Nota:** Arquivos criptografados ainda não são suportados"
 },
-"nplurals=2; plural=(n > 1);");
+"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");
