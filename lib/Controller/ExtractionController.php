@@ -56,11 +56,14 @@ class ExtractionController extends Controller
         if ($this->encryptionManager->isEnabled()) {
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Encryption is not supported yet'));
         }
+        // Protects before relative paths
+        $targetDirName = str_replace('../', '', $targetDirName);
+        $targetDirName = trim($targetDirName);
 
         $sourceFilePath = Filesystem::getLocalFile($directory . '/' . $sourceFileName);
         $dir = dirname($sourceFilePath);
 
-        //name of the file without extention
+        // name of the file without extension
         $fileNameWithoutExtension = pathinfo($sourceFileName)['filename'];
         $isTarGz = array_key_exists('extension', pathinfo($fileNameWithoutExtension)) && pathinfo($fileNameWithoutExtension)['extension'] == 'tar';
         if ($isTarGz) {
