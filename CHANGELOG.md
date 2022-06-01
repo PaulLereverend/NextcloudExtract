@@ -1,3 +1,6 @@
+## 1.3.6
+- Added a dialog to change the target directory name
+
 ## 1.3.5
 
 - Fix issue on external storage
