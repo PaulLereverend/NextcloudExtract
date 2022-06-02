@@ -1,7 +1,7 @@
 OC.L10N.register(
     "extract",
     {
-        "Error extracting": "Помилка з видобуванням",
+        "Error extracting ": "Помилка з видобуванням",
         "Encryption is not supported yet": "Шифрування ще не підтримується",
         "Zip extension is not available": "Розширення ZIP недоступне",
         "Cannot open Zip file": "Не вдається відкрити Zip-файл",
