@@ -1,7 +1,7 @@
 OC.L10N.register(
     "extract",
     {
-        "Error extracting ": "Error al extraer",
+        "Error extracting ": "Error al extraer ",
         "Encryption is not supported yet": "El cifrado aún no está soportado",
         "Zip extension is not available": "La extensión Zip no está disponible",
         "Cannot open Zip file": "No se puede abrir el archivo Zip",

@@ -1,7 +1,7 @@
 OC.L10N.register(
     "extract",
     {
-    "Extract here" : "Εξαγωγή εδώ",
+    "Extract here" : "Εξαγωγή εδώ ",
     "Error extracting " : "Σφάλμα αποσυμπίεσης ",
     "Encryption is not supported yet" : "Η κρυπτογράφηση δεν υποστηρίζεται ακόμη",
     "Zip extension is not available" : "Η επέκταση zip δεν είναι διαθέσιμη",
