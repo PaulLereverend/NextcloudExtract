@@ -74,7 +74,7 @@ $(document).ready(function () {
                                     context.fileList.showFileBusyState(tr, false);
                                     OC.dialogs.alert(
                                         t('extract', response.desc),
-                                        t('extract', 'Error extracting' ) + " " + filename
+                                        t('extract', 'Error extracting ' ) + filename
                                     );
                                 }
                             }
