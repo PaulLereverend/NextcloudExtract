@@ -34,10 +34,8 @@ $(document).ready(function () {
             }
 
             var data = {
-                sourceFileName: filename,
+                sourcePath: context.dir ? context.dir + '/' + filename : filename,
                 targetDirName: dirName,
-                directory: context.dir,
-                external: context.fileInfoModel.attributes.mountType && context.fileInfoModel.attributes.mountType.startsWith("external") ? 1 : 0,
                 type: type
             };
 
@@ -47,7 +45,7 @@ $(document).ready(function () {
             var $input = $('<input/>');
             self.createDialog(
                 t('extract', 'Extract'),
-                ($dialog, $content, $cancelButton, $confirmButton) => {
+                (_$dialog, $content, _$cancelButton, $confirmButton) => {
                     $confirmButton.text(t('extract', 'Extract'));
 
                     var $text = $('<p/>');
@@ -87,6 +85,7 @@ $(document).ready(function () {
         init: function () {
             var self = this;
 
+            // ZIP
             OCA.Files.fileActions.registerAction({
                 name: 'extractzip',
                 displayName: t('extract', 'Extract'),
@@ -111,9 +110,8 @@ $(document).ready(function () {
                     self.extractDialog(filename, context, 'rar');
                 }
             });
+
             // TAR
-            //'application/x-tar', 'application/x-7z-compressed'
-            //var types = [];
             var types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
             types.forEach(type => {
                 OCA.Files.fileActions.registerAction({
