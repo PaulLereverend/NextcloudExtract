@@ -145,6 +145,8 @@ class ExtractionController extends Controller
         } else {
             Filesystem::mkdir($internalTargetPath);
         }
+
+        $this->logger->info("Successfully extracted '$sourcePath' to '$internalTargetPath' ($this->transactionId)");
         return $response;
     }
 

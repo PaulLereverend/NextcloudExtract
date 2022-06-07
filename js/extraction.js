@@ -54,6 +54,14 @@ $(document).ready(function () {
 
                     $input.attr('type', 'text').attr('id', 'file-name-input').attr('placeholder', t('extract', 'File Name')).attr('value', dirName);
                     $content.append($input);
+
+                    $input.on('input', () => {
+                        if($input.val().trim() === '') {
+                            $confirmButton.prop("disabled", true);
+                        } else {
+                            $confirmButton.prop("disabled", false);
+                        }
+                    });
                 },
                 (result) => {
                     context.fileList.showFileBusyState(tr, false);
