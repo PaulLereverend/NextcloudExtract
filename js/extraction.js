@@ -45,7 +45,9 @@ $(document).ready(function () {
             var $input = $('<input/>');
             self.createDialog(
                 t('extract', 'Extract'),
-                (_$dialog, $content, _$cancelButton, $confirmButton) => {
+                ($dialog, $content, _$cancelButton, $confirmButton) => {
+                    $dialog.css("min-width", "300px");
+
                     $confirmButton.text(t('extract', 'Extract'));
 
                     var $text = $('<p/>');
