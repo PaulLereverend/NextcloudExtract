@@ -79,23 +79,30 @@ class ExtractionController extends Controller
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Encryption is not supported yet'));
         }
 
+        // Absolute file path to the local file, downloads tmp file if primary storage is external (S3)
         $absoluteFilePath = Filesystem::getView()->getLocalFile($sourcePath);
+        $this->logger->error($absoluteFilePath);
         if ($absoluteFilePath === null) {
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Archive file not found'));
         }
 
-        // Path to the File relative to the mount point
+        // Path to the file in Nextclouds internal filesystem
         $internalDir = dirname($sourcePath);
+        
         $isExternal = $this->isExternalStorage($internalDir);
+
+        // Tar gz files downloaded from external storage look like '/tmp/oc_tmp_LNmlJI-.gz' in $absoluteFilePath, so $sourcePath has to be used
+        $isTarGz = self::isTarGz($sourcePath);
 
         // Make the target directory name
         $targetDirName = $this->sanitizeTargetPath($targetDirName);
-        $fileNameWithoutExtension = $this->getFileNameWithoutExtension($absoluteFilePath, $isTarGz);
+        $fileNameWithoutExtension = self::getFileNameWithoutExtension($absoluteFilePath);
 
         if (empty($targetDirName)) {
             $targetDirName = $fileNameWithoutExtension;
         }
 
+        // Path to the target folder in Nextclouds internal filesystem
         $internalTargetPath = "$internalDir/$targetDirName";
 
         // Error if the target folder already exists
@@ -104,12 +111,12 @@ class ExtractionController extends Controller
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Directory already exists'));
         }
 
-        // Extraction target
+        // Path to the target folder in local filesystem
         $extractTo = dirname($absoluteFilePath) . '/' . $targetDirName;
         if ($isExternal) {
             $transactionDir = '/tmp/' . $this->transactionId;
 
-            // Remove leading '/' from S3 path
+            // Remove leading '/' from external storage path
             $internalDir = substr($internalDir, 0, 1) === '/' ? substr($internalDir, 1) : $internalDir;
             $targetDir = strlen($internalDir) > 0 ? "$internalDir/$targetDirName" : $targetDirName;
 
@@ -130,6 +137,7 @@ class ExtractionController extends Controller
                 if ($isTarGz && $response['code'] == StatusCode::SUCCESS) {
                     // Extract .tar
                     $tarName = pathinfo($absoluteFilePath)['filename'];
+
                     $tarFilePath = $extractTo . '/' . $tarName;
                     $response = $this->extractOther($tarFilePath, $extractTo);
 
@@ -141,7 +149,7 @@ class ExtractionController extends Controller
 
         // Register the new files to the NC filesystem
         if ($isExternal) {
-            $this->moveFromTmp(true);
+            $this->moveFromTmp();
         } else {
             Filesystem::mkdir($internalTargetPath);
         }
@@ -255,14 +263,11 @@ class ExtractionController extends Controller
         return $this->rootFolder->get($mountPointDir)->getStorage();
     }
 
-    public function getFileNameWithoutExtension(string $path, &$isTarGz): string
-    {
-        $fileName = pathinfo($path)['filename'];
-        $isTarGz = array_key_exists('extension', pathinfo($fileName)) && pathinfo($fileName)['extension'] == 'tar';
-        return $isTarGz ? pathinfo($fileName)['filename'] : $fileName;
-    }
-
-    public function moveFromTmp(bool $isExternalPath): void
+    /**
+     * Moves the locally generated files from the /tmp/ folder from this transaction to the nextcloud storage.
+     * This is the case if the file for this transaction is from an external storage (S3)
+     */
+    public function moveFromTmp(): void
     {
         $transactionDir = '/tmp/' . $this->transactionId . '/';
 
@@ -272,11 +277,7 @@ class ExtractionController extends Controller
         foreach ($it as $fileInfo) {
             if ($fileInfo->isFile()) {
                 $tmpFilePath = $fileInfo->getPathname();
-                $storageFilePath = substr($tmpFilePath, strlen($transactionDir));
-
-                if ($isExternalPath) {
-                    $storageFilePath = '/' . $storageFilePath;
-                }
+                $storageFilePath = '/' . substr($tmpFilePath, strlen($transactionDir));
 
                 // move from tmp to nextcloud storage
                 Filesystem::fromTmpFile($tmpFilePath, $storageFilePath);
@@ -285,5 +286,29 @@ class ExtractionController extends Controller
             }
         }
         rmdir($transactionDir);
+    }
+
+    /**
+     * Returns the name of the file at the given path without its extension
+     * 
+     * @param string $path path to the file
+     * @return string file name without extension
+     */
+    public static function getFileNameWithoutExtension(string $path): string
+    {
+        $fileName = pathinfo($path)['filename'];
+        return self::isTarGz($path) ? pathinfo($fileName)['filename'] : $fileName;
+    }
+
+    /**
+     * Checks if the file at the given path has the ending .tar.*
+     * 
+     * @param string $path path to the file
+     * @return bool is tar.gz
+     */
+    public static function isTarGz(string $path): bool
+    {
+        $fileName = pathinfo($path)['filename'];
+        return array_key_exists('extension', pathinfo($fileName)) && pathinfo($fileName)['extension'] == 'tar';
     }
 }
