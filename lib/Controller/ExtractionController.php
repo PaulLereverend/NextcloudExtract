@@ -42,18 +42,10 @@ class ExtractionController extends Controller {
 
 	/**
 	 * CAUTION: the @Stuff turns off security checks; for this page no admin is
-	 *          required and no CSRF check. If you don't know what CSRF is, read
-	 *          it up in the docs or you might create a security hole. This is
-	 *          basically the only required method to add this exemption, don't
-	 *          add it to any other method if you don't exactly know what it does
+	 *          required.
 	 *
-	 *
-	 * @NoCSRFRequired
+	 * @NoAdminRequired
 	 */
-    /**
-	* @NoAdminRequired
-	*/
-
 	public function extract($nameOfFile, $directory, $external, $type){
 		if ($this->encryptionManager->isEnabled()) {
 			$response = array();
@@ -92,7 +84,7 @@ class ExtractionController extends Controller {
 					$file = $extractTo . '/' . pathinfo($file)['filename'];
 					$filename = $clean_filename;
 					$response = $this->extractOther($file, $filename, $extractTo);
-					
+
 					// remove .tar file
 					unlink($file);
 				}else{
