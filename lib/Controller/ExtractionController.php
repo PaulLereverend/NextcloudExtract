@@ -63,7 +63,7 @@ class ExtractionController extends Controller {
 		return $fileNode->getStorage()->getLocalFile($fileNode->getInternalPath());
 	}
 
-	//Register the new files to the NC filesystem
+	// Register the new files to the NC filesystem
 	private static function postExtract($filename, $directory, $tmpPath, $external){
 		$NCDestination = $directory . '/' . $filename;
 		if($external){
@@ -100,15 +100,16 @@ class ExtractionController extends Controller {
 		//name of the file without extension
 		$filename = pathinfo($nameOfFile, PATHINFO_FILENAME);
 		$extractTo = $dir . '/' . $filename;
-		$tmpPath = "/extract_tmp/" . $filename ;
-
-		if(pathinfo($filename, PATHINFO_EXTENSION) == "tar"){
-			$tmpPath = '/extract_tmp/' . pathinfo($filename, PATHINFO_FILENAME);
-		}
 
 		// if the file is un external storage
 		if($external){
+			$tmpPath = "/extract_tmp/" . $filename ;
+			if(pathinfo($filename, PATHINFO_EXTENSION) == "tar"){
+				$tmpPath = '/extract_tmp/' . pathinfo($filename, PATHINFO_FILENAME);
+			}
 			$extractTo = Filesystem::getLocalFolder('/') . $tmpPath;
+		} else {
+			$tmpPath = null;
 		}
 
 		switch ($type) {
@@ -134,6 +135,16 @@ class ExtractionController extends Controller {
 					$response = $this->extractionService->extractOther($file, $filename, $extractTo);
 				}
 				break;
+		}
+
+		$iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractTo));
+		foreach ($iterator as $file) {
+			/** @var \SplFileInfo $file */
+			if (Filesystem::isFileBlacklisted($file->getBasename())) {
+				$this->logger->warning(__METHOD__ . ': removing blacklisted file: ' . $file->getPathname());
+				// remove it
+				unlink($file->getPathname());
+			}
 		}
 
 		self::postExtract($filename, $directory, $tmpPath, $external);
