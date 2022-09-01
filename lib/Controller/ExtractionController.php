@@ -1,21 +1,29 @@
 <?php
 namespace OCA\Extract\Controller;
 
+use ZipArchive;
+use Rar;
+// use PharData; not used ATM
+
+// Only in order to access Filesystem::isFileBlacklisted().
+use OC\Files\Filesystem;
+
 use OCP\IRequest;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
 use OCP\Files\NotFoundException;
 use OCP\Files\IRootFolder;
-use ZipArchive;
-use Rar;
-use PharData;
-use \OCP\IConfig;
+use OCP\Files\File;
+use OCP\Files\Folder;
+
+use OCP\IConfig;
 use OCP\IL10N;
 use OCP\EventDispatcher\IEventDispatcher;
-use OC\Files\Filesystem;
 use OCP\Encryption\IManager;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+
 use OCA\Extract\Service\ExtractionService;
 
 class ExtractionController extends Controller {
@@ -29,6 +37,9 @@ class ExtractionController extends Controller {
 	/** @var IRootFolder */
 	private $rootFolder;
 
+	/** @var Folder */
+	private $userFolder;
+
 	/** @var IManager */
 	protected $encryptionManager;
 
@@ -38,7 +49,7 @@ class ExtractionController extends Controller {
 	/**  @var ExtractionService */
 	private $extractionService;
 
-	public function __construct(
+ 	public function __construct(
 		string $AppName
 		, IRequest $request
 		, ExtractionService $extractionService
@@ -55,29 +66,51 @@ class ExtractionController extends Controller {
 		$this->userId = $UserId;
 		$this->extractionService = $extractionService;
 		$this->rootFolder = $rootFolder;
+		$this->userFolder = $this->rootFolder->getUserFolder($this->userId);
 	}
 
 	private function getFile($directory, $fileName){
-		$userFolder = $this->rootFolder->getUserFolder($this->userId);
-		$fileNode = $userFolder->get($directory . '/' . $fileName);
+		$fileNode = $this->userFolder->get($directory . '/' . $fileName);
 		return $fileNode->getStorage()->getLocalFile($fileNode->getInternalPath());
 	}
 
-	// Register the new files to the NC filesystem
-	private static function postExtract($filename, $directory, $tmpPath, $external){
+	/**
+	 * Register the new files to the NC filesystem.
+	 *
+	 * @param string $filename The Nextcloud file name.
+	 *
+	 * @param srting $directory The Nextcloud directory name.
+	 *
+	 * @param string $extractTo The local file-system path of the directory
+	 * with the extracted data, i.e. this is the OS path.
+	 *
+	 * @param null|string $tmpPath The Nextcloud temporary path. This is only
+	 * non-null when extracting from external storage.
+	 */
+	private function postExtract(string $filename, string $directory, string $extractTo, ?string $tmpPath){
+
+		$iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractTo));
+		foreach ($iterator as $file) {
+			/** @var \SplFileInfo $file */
+			if (Filesystem::isFileBlacklisted($file->getBasename())) {
+				$this->logger->warning(__METHOD__ . ': removing blacklisted file: ' . $file->getPathname());
+				// remove it
+				unlink($file->getPathname());
+			}
+		}
+
 		$NCDestination = $directory . '/' . $filename;
-		if($external){
-			Filesystem::mkdir($tmpPath);
-			Filesystem::rename($tmpPath, $NCDestination);
-			Filesystem::rmdir(dirname($tmpPath));
+		if($tmpPath){
+			$tmpFolder = $this->rootFolder->get($tmpPath);
+			$tmpFolder->move($this->userFolder->getFullPath($NCDestination));
 		}else{
-			Filesystem::mkdir($NCDestination);
+			// This seems to be enough to trigger a files-cache refresh
+			$this->userFolder->get($NCDestination);
 		}
 	}
 
 	/**
-	 * CAUTION: the @Stuff turns off security checks; for this page no admin is
-	 *          required.
+	 * The only AJAX callback. This is a hook for ordinary cloud-users, os no admin required.
 	 *
 	 * @NoAdminRequired
 	 */
@@ -95,11 +128,27 @@ class ExtractionController extends Controller {
 
 		// if the file is un external storage
 		if($external){
-			$tmpPath = "/extract_tmp/" . $filename ;
-			if(pathinfo($filename, PATHINFO_EXTENSION) == "tar"){
-				$tmpPath = '/extract_tmp/' . pathinfo($filename, PATHINFO_FILENAME);
+			$appPath = $this->userId . '/' . $this->appName;
+			try {
+				$appDirectory = $this->rootFolder->get($appPath);
+			} catch (\OCP\Files\NotFoundException $e) {
+				$appDirectory = $this->rootFolder->newFolder($appPath);
 			}
-			$extractTo = Filesystem::getLocalFolder('/') . $tmpPath;
+			if(pathinfo($filename, PATHINFO_EXTENSION) == "tar"){
+				$archiveDir = pathinfo($filename, PATHINFO_FILENAME);
+			} else {
+				$archiveDir = $fileName;
+			}
+
+			// remove temporary directory if exists from interrupted previous runs
+			try {
+				$appDirectory->get($archiveDir)->delete();
+			} catch (\OCP\Files\NotFoundException $e) {
+				// ok
+			}
+
+			$tmpPath = $appDirectory->getPath() . '/' . $archiveDir;
+			$extractTo = $appDirectory->getStorage()->getLocalFile($appDirectory->getInternalPath()) . '/' . $archiveDir;
 		} else {
 			$tmpPath = null;
 		}
@@ -129,17 +178,7 @@ class ExtractionController extends Controller {
 				break;
 		}
 
-		$iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractTo));
-		foreach ($iterator as $file) {
-			/** @var \SplFileInfo $file */
-			if (Filesystem::isFileBlacklisted($file->getBasename())) {
-				$this->logger->warning(__METHOD__ . ': removing blacklisted file: ' . $file->getPathname());
-				// remove it
-				unlink($file->getPathname());
-			}
-		}
-
-		self::postExtract($filename, $directory, $tmpPath, $external);
+		$this->postExtract($filename, $directory, $extractTo, $tmpPath);
 
 		return new DataResponse($response);
 	}
