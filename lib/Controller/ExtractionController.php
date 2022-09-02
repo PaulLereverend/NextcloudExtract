@@ -77,7 +77,7 @@ class ExtractionController extends Controller {
 	/**
 	 * Register the new files to the NC filesystem.
 	 *
-	 * @param string $filename The Nextcloud file name.
+	 * @param string $fileName The Nextcloud file name.
 	 *
 	 * @param srting $directory The Nextcloud directory name.
 	 *
@@ -87,7 +87,7 @@ class ExtractionController extends Controller {
 	 * @param null|string $tmpPath The Nextcloud temporary path. This is only
 	 * non-null when extracting from external storage.
 	 */
-	private function postExtract(string $filename, string $directory, string $extractTo, ?string $tmpPath){
+	private function postExtract(string $fileName, string $directory, string $extractTo, ?string $tmpPath){
 
 		$iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractTo));
 		foreach ($iterator as $file) {
@@ -99,7 +99,7 @@ class ExtractionController extends Controller {
 			}
 		}
 
-		$NCDestination = $directory . '/' . $filename;
+		$NCDestination = $directory . '/' . $fileName;
 		if($tmpPath){
 			$tmpFolder = $this->rootFolder->get($tmpPath);
 			$tmpFolder->move($this->userFolder->getFullPath($NCDestination));
@@ -123,8 +123,8 @@ class ExtractionController extends Controller {
 		$file = $this->getFile($directory, $nameOfFile);
 		$dir = dirname($file);
 		//name of the file without extension
-		$filename = pathinfo($nameOfFile, PATHINFO_FILENAME);
-		$extractTo = $dir . '/' . $filename;
+		$fileName = pathinfo($nameOfFile, PATHINFO_FILENAME);
+		$extractTo = $dir . '/' . $fileName;
 
 		// if the file is un external storage
 		if($external){
@@ -134,8 +134,8 @@ class ExtractionController extends Controller {
 			} catch (\OCP\Files\NotFoundException $e) {
 				$appDirectory = $this->rootFolder->newFolder($appPath);
 			}
-			if(pathinfo($filename, PATHINFO_EXTENSION) == "tar"){
-				$archiveDir = pathinfo($filename, PATHINFO_FILENAME);
+			if(pathinfo($fileName, PATHINFO_EXTENSION) == "tar"){
+				$archiveDir = pathinfo($fileName, PATHINFO_FILENAME);
 			} else {
 				$archiveDir = $fileName;
 			}
@@ -155,30 +155,30 @@ class ExtractionController extends Controller {
 
 		switch ($type) {
 			case 'zip':
-				$response = $this->extractionService->extractZip($file, $filename, $extractTo);
+				$response = $this->extractionService->extractZip($file, $fileName, $extractTo);
 				break;
 			case 'rar':
-				$response = $this->extractionService->extractRar($file, $filename, $extractTo);
+				$response = $this->extractionService->extractRar($file, $fileName, $extractTo);
 				break;
 			default:
 				// Check if the file is .tar.gz in order to do the extraction on a single step
-				if(pathinfo($filename, PATHINFO_EXTENSION) == "tar"){
-					$clean_filename = pathinfo($filename, PATHINFO_FILENAME);
-					$extractTo = dirname($extractTo) . '/' . $clean_filename;
-					$response = $this->extractionService->extractOther($file, $clean_filename, $extractTo);
+				if(pathinfo($fileName, PATHINFO_EXTENSION) == "tar"){
+					$cleanFileName = pathinfo($fileName, PATHINFO_FILENAME);
+					$extractTo = dirname($extractTo) . '/' . $cleanFileName;
+					$response = $this->extractionService->extractOther($file, $cleanFileName, $extractTo);
 					$file = $extractTo . '/' . pathinfo($file, PATHINFO_FILENAME);
-					$filename = $clean_filename;
-					$response = $this->extractionService->extractOther($file, $filename, $extractTo);
+					$fileName = $cleanFileName;
+					$response = $this->extractionService->extractOther($file, $fileName, $extractTo);
 
 					// remove .tar file
 					unlink($file);
 				}else{
-					$response = $this->extractionService->extractOther($file, $filename, $extractTo);
+					$response = $this->extractionService->extractOther($file, $fileName, $extractTo);
 				}
 				break;
 		}
 
-		$this->postExtract($filename, $directory, $extractTo, $tmpPath);
+		$this->postExtract($fileName, $directory, $extractTo, $tmpPath);
 
 		return new DataResponse($response);
 	}
