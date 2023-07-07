@@ -5,11 +5,11 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 
 	const types = {
-		zip: [ 'application/zip', ],
-		rar: [ 'application/x-rar-compressed' ],
+		zip: ['application/zip',],
+		rar: ['application/x-rar-compressed'],
 		// TAR
 		//'application/x-tar', 'application/x-7z-compressed'
-		other: ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'],
+		other: ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip', 'application/x-compressed'],
 	};
 
 	for (const [type, mimeTypes] of Object.entries(types)) {
