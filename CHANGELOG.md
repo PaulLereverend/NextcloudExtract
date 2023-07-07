@@ -1,3 +1,7 @@
+
+## 1.3.6
+
+- NC27 support
 ## 1.3.5
 
 - Fix issue on external storage
