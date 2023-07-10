@@ -1,6 +1,6 @@
-$(document).ready(function () {
+$(() => {
 
-    var actionsExtract = {
+    const actionsExtract = {
         createDialog: function (title, init, callback) {
             return OC.dialogs.confirmHtml(
                 '',
@@ -8,12 +8,12 @@ $(document).ready(function () {
                 callback,
                 true
             ).then(() => {
-                var $dialog = $('.oc-dialog:visible');
-                var $content = $('.oc-dialog-content');
-                var $buttons = $dialog.find('button');
+                const $dialog = $('.oc-dialog:visible');
+                const $content = $('.oc-dialog-content');
+                const $buttons = $('.oc-dialog-buttonrow').find('button');
 
-                var $cancelButton = $buttons.eq(0);
-                var $confirmButton = $buttons.eq(1);
+                const $cancelButton = $buttons.eq(0);
+                const $confirmButton = $buttons.eq(1);
 
                 $content.empty();
 
@@ -25,32 +25,36 @@ $(document).ready(function () {
         },
 
         extractDialog: function (filename, context, type) {
-            var self = this;
+            const self = this;
 
-            var dirName = filename;
-            var matches = dirName.match('^([^\\.]+)');
+            let dirName = filename;
+            const matches = dirName.match('^([^\\.]+)');
             if (matches) {
                 dirName = matches[0];
             }
 
-            var data = {
+            const data = {
                 sourcePath: context.dir ? context.dir + '/' + filename : filename,
                 targetDirName: dirName,
                 type: type
             };
 
-            var tr = context.fileList.findFileEl(filename);
+            const tr = context.fileList.findFileEl(filename);
             context.fileList.showFileBusyState(tr, true);
 
-            var $input = $('<input/>');
+            const $input = $('<input/>');
+            $input.css("width", "100%");
+
             self.createDialog(
                 t('extract', 'Extract'),
                 ($dialog, $content, _$cancelButton, $confirmButton) => {
                     $dialog.css("min-width", "300px");
+                    $dialog.css("width", "50%");
+                    $dialog.css("max-width", "600px");
 
                     $confirmButton.text(t('extract', 'Extract'));
 
-                    var $text = $('<p/>');
+                    const $text = $('<p/>');
                     $text.text(t('extract', 'Files will be extracted to this folder:'));
                     $content.append($text);
 
@@ -93,7 +97,7 @@ $(document).ready(function () {
         },
 
         init: function () {
-            var self = this;
+            const self = this;
 
             // ZIP
             OCA.Files.fileActions.registerAction({
@@ -122,7 +126,7 @@ $(document).ready(function () {
             });
 
             // TAR
-            var types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
+            const types = ['application/x-tar', 'application/x-7z-compressed', 'application/x-bzip2', 'application/x-deb', 'application/x-gzip'];
             types.forEach(type => {
                 OCA.Files.fileActions.registerAction({
                     name: 'extractOthers',

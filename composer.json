@@ -9,9 +9,11 @@
         }
     ],
     "require": {
+        "php": ">=8.2",
+        "ext-zip": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9",
-        "christophwurst/nextcloud": "24"
+        "nextcloud/ocp": "^26"
     }
 }
