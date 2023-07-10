@@ -16,19 +16,17 @@ use OCP\IL10N;
 use OC\Files\Filesystem;
 use OCP\Encryption\IManager;
 
-abstract class StatusCode
-{
+abstract class StatusCode {
     const ERROR = 0;
     const SUCCESS = 1;
 }
 
-class ExtractionController extends Controller
-{
+class ExtractionController extends Controller {
     /** @var IL10N */
     private $l;
 
     /** @var IManager */
-    protected $encryptionManager;
+    protected IManager $encryptionManager;
 
     private $userId;
 
@@ -36,13 +34,20 @@ class ExtractionController extends Controller
     private $logger;
 
     /** @var IRootFolder */
-    private $rootFolder;
+    private IRootFolder $rootFolder;
 
     /** @var string */
-    private $transactionId;
+    private string $transactionId;
 
-    public function __construct($AppName, IRequest $request, IL10N $l, IManager $encryptionManager, $UserId, LoggerInterface $logger, IRootFolder $rootFolder)
-    {
+    public function __construct(
+        $AppName,
+        IRequest $request,
+        IL10N $l,
+        IManager $encryptionManager,
+        $UserId,
+        LoggerInterface $logger,
+        IRootFolder $rootFolder
+    ) {
         parent::__construct($AppName, $request);
         $this->l = $l;
         $this->encryptionManager = $encryptionManager;
@@ -73,8 +78,7 @@ class ExtractionController extends Controller
      * @NoCSRFRequired
      * @NoAdminRequired
      */
-    public function extract($sourcePath, $targetDirName, $type)
-    {
+    public function extract($sourcePath, $targetDirName, $type) {
         if ($this->encryptionManager->isEnabled()) {
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Encryption is not supported yet'));
         }
@@ -165,15 +169,14 @@ class ExtractionController extends Controller
      * @param string $extractTo absolute path to the extraction directory
      * @return array json response
      */
-    public function extractZip(string $filePath, string $extractTo): array
-    {
+    public function extractZip(string $filePath, string $extractTo): array {
         if (!extension_loaded('zip')) {
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Zip extension is not available'));
         }
 
         $zip = new ZipArchive();
 
-        if (!$zip->open($filePath) === TRUE) {
+        if (!$zip->open($filePath) === true) {
             return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Cannot open Zip file'));
         }
 
@@ -189,10 +192,10 @@ class ExtractionController extends Controller
      * @param string $extractTo absolute path to the extraction directory
      * @return array json response
      */
-    public function extractRar(string $filePath, string $extractTo): array
-    {
+    public function extractRar(string $filePath, string $extractTo): array {
         if (!extension_loaded('rar')) {
             exec('unrar x ' . escapeshellarg($filePath) . ' -R ' . escapeshellarg($extractTo) . '/ -o+', $output, $return);
+
             if (sizeof($output) <= 4) {
                 return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Oops something went wrong. Check that you have rar extension or unrar installed'));
             }
@@ -290,7 +293,6 @@ class ExtractionController extends Controller
 
     /**
      * Returns the name of the file at the given path without its extension
-     * 
      * @param string $path path to the file
      * @return string file name without extension
      */
@@ -302,7 +304,6 @@ class ExtractionController extends Controller
 
     /**
      * Checks if the file at the given path has the ending .tar.*
-     * 
      * @param string $path path to the file
      * @return bool is tar.gz
      */

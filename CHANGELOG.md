@@ -1,3 +1,6 @@
+## 1.3.8
+- NC26 support
+
 ## 1.3.6
 - Added a dialog to change the target directory name
 
