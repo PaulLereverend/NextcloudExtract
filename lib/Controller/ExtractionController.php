@@ -2,314 +2,405 @@
 
 namespace OCA\Extract\Controller;
 
+use FilesystemIterator;
+use OC\Files\Filesystem;
+use OCA\Extract\Service\ExtractionService;
+use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\DataResponse;
+use OCP\Encryption\IManager;
+use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Storage\IStorage;
+use OCP\IL10N;
 use OCP\IRequest;
-use OCP\AppFramework\Controller;
 use Psr\Log\LoggerInterface;
-use ZipArchive;
 use Rar;
-use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use OCP\IL10N;
-use OC\Files\Filesystem;
-use OCP\Encryption\IManager;
+use ZipArchive;
+
+// use PharData; not used ATM
+
+// Only in order to access Filesystem::isFileBlacklisted().
 
 abstract class StatusCode {
-    const ERROR = 0;
-    const SUCCESS = 1;
+	const ERROR = 0;
+	const SUCCESS = 1;
 }
 
 class ExtractionController extends Controller {
-    /** @var IL10N */
-    private $l;
 
-    /** @var IManager */
-    protected IManager $encryptionManager;
+	/** @var IL10N */
+	private $l;
 
-    private $userId;
+	/** @var LoggerInterface */
+	private $logger;
 
-    /** @var LoggerInterface */
-    private $logger;
+	/** @var IRootFolder */
+	private $rootFolder;
 
-    /** @var IRootFolder */
-    private IRootFolder $rootFolder;
+	/** @var Folder */
+	private $userFolder;
 
-    /** @var string */
-    private string $transactionId;
+	/** @var IManager */
+	protected IManager $encryptionManager;
 
-    public function __construct(
-        $AppName,
-        IRequest $request,
-        IL10N $l,
-        IManager $encryptionManager,
-        $UserId,
-        LoggerInterface $logger,
-        IRootFolder $rootFolder
-    ) {
-        parent::__construct($AppName, $request);
-        $this->l = $l;
-        $this->encryptionManager = $encryptionManager;
-        $this->userId = $UserId;
-        $this->logger = $logger;
-        $this->rootFolder = $rootFolder;
+	/** @var string */
+	private $userId;
 
-        $this->transactionId = uniqid('nextcloud_extract-');
+	/**  @var ExtractionService */
+	private $extractionService;
 
-        \OC_Util::tearDownFS();
-        \OC_Util::setupFS($this->userId);
-    }
+	/** @var string */
+	private string $transactionId;
 
-    /**
-     * CAUTION: the @Stuff turns off security checks; for this page no admin is
-     *          required and no CSRF check. If you don't know what CSRF is, read
-     *          it up in the docs or you might create a security hole. This is
-     *          basically the only required method to add this exemption, don't
-     *          add it to any other method if you don't exactly know what it does
-     */
-    /**
-     * @param $sourcePath
-     * @param $targetDirName
-     * @param $type
-     * @return array
-     * @throws \OCP\Files\NotFoundException
-     *
-     * @NoCSRFRequired
-     * @NoAdminRequired
-     */
-    public function extract($sourcePath, $targetDirName, $type) {
-        if ($this->encryptionManager->isEnabled()) {
-            return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Encryption is not supported yet'));
-        }
+	public function __construct(
+		string $AppName,
+		IRequest $request,
+		ExtractionService $extractionService,
+		IRootFolder $rootFolder,
+		IL10N $l,
+		LoggerInterface $logger,
+		IManager $encryptionManager,
+		$UserId
+	) {
+		parent::__construct($AppName, $request);
+		$this->l = $l;
+		$this->logger = $logger;
+		$this->encryptionManager = $encryptionManager;
+		$this->userId = $UserId;
+		$this->extractionService = $extractionService;
+		$this->rootFolder = $rootFolder;
+		$this->userFolder = $this->rootFolder->getUserFolder($this->userId);
 
-        // Absolute file path to the local file, downloads tmp file if primary storage is external (S3)
-        $absoluteFilePath = Filesystem::getView()->getLocalFile($sourcePath);
-        $this->logger->error($absoluteFilePath);
-        if ($absoluteFilePath === null) {
-            return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Archive file not found'));
-        }
+		$this->transactionId = uniqid('nextcloud_extract-');
 
-        // Path to the file in Nextclouds internal filesystem
-        $internalDir = dirname($sourcePath);
-        
-        $isExternal = $this->isExternalStorage($internalDir);
+		\OC_Util::tearDownFS();
+		\OC_Util::setupFS($this->userId);
+	}
 
-        // Tar gz files downloaded from external storage look like '/tmp/oc_tmp_LNmlJI-.gz' in $absoluteFilePath, so $sourcePath has to be used
-        $isTarGz = self::isTarGz($sourcePath);
+	/**
+	 * Get the absolute path to the file.
+	 *
+	 * @param $sourcePath
+	 * @return string | array with the absolute path to the file or an array error message
+	 */
+	private function getAbsoluteFilePath($sourcePath): array|string {
+		$absoluteFilePath = Filesystem::getView()->getLocalFile($sourcePath);
+		if ($absoluteFilePath === null) {
+			return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Archive file not found'));
+		}
+		return $absoluteFilePath;
+	}
 
-        // Make the target directory name
-        $targetDirName = $this->sanitizeTargetPath($targetDirName);
-        $fileNameWithoutExtension = self::getFileNameWithoutExtension($absoluteFilePath);
+	/**
+	 * Register the new files to the NC filesystem.
+	 *
+	 * @param string $extractTo The local file-system path of the directory
+	 *  with the extracted data, i.e. this is the OS path.
+	 */
+	private function postExtract(string $internalTargetPath, string $extractTo, bool $isExternal) {
+		$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($extractTo));
+		foreach ($iterator as $file) {
+			/** @var \SplFileInfo $file */
+			if (Filesystem::isFileBlacklisted($file->getBasename())) {
+				$this->logger->warning(__METHOD__ . ': removing blacklisted file: ' . $file->getPathname());
+				// remove it
+				unlink($file->getPathname());
+			}
+		}
 
-        if (empty($targetDirName)) {
-            $targetDirName = $fileNameWithoutExtension;
-        }
+		if ($isExternal) {
+			$this->moveFromTmp();
+		} else {
+			Filesystem::mkdir($internalTargetPath);
+		}
+	}
 
-        // Path to the target folder in Nextclouds internal filesystem
-        $internalTargetPath = "$internalDir/$targetDirName";
+	/**
+	 * Moves the locally generated files from the /tmp/ folder from this transaction to the nextcloud storage.
+	 * This is the case if the file for this transaction is from an external storage (S3)
+	 */
+	private function moveFromTmp(): void {
+		$transactionDir = '/tmp/' . $this->transactionId . '/';
 
-        // Error if the target folder already exists
-        $folderExists = Filesystem::is_dir($internalTargetPath);
-        if ($folderExists) {
-            return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Directory already exists'));
-        }
+		$it = new RecursiveDirectoryIterator($transactionDir, FilesystemIterator::SKIP_DOTS);
+		$it = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
 
-        // Path to the target folder in local filesystem
-        $extractTo = dirname($absoluteFilePath) . '/' . $targetDirName;
-        if ($isExternal) {
-            $transactionDir = '/tmp/' . $this->transactionId;
+		foreach ($it as $fileInfo) {
+			if ($fileInfo->isFile()) {
+				$tmpFilePath = $fileInfo->getPathname();
+				$storageFilePath = '/' . substr($tmpFilePath, strlen($transactionDir));
 
-            // Remove leading '/' from external storage path
-            $internalDir = substr($internalDir, 0, 1) === '/' ? substr($internalDir, 1) : $internalDir;
-            $targetDir = strlen($internalDir) > 0 ? "$internalDir/$targetDirName" : $targetDirName;
+				// move from tmp to nextcloud storage
+				Filesystem::fromTmpFile($tmpFilePath, $storageFilePath);
+			} elseif ($fileInfo->isDir()) {
+				rmdir($fileInfo->getPathname());
+			}
+		}
+		rmdir($transactionDir);
+	}
 
-            $extractTo = "$transactionDir/$targetDir";
-        }
+	/**
+	 * The only AJAX callback. This is a hook for ordinary cloud-users, os no admin required.
+	 *
+	 *  CAUTION: the @Stuff turns off security checks; for this page no admin is
+	 *           required and no CSRF check. If you don't know what CSRF is, read
+	 *           it up in the docs or you might create a security hole. This is
+	 *           basically the only required method to add this exemption, don't
+	 *           add it to any other method if you don't exactly know what it does
+	 *
+	 *
+	 * @param $sourcePath
+	 * @param $targetDirName
+	 * @param $type
+	 * @return DataResponse
+	 * @throws \OCP\Files\NotFoundException
+	 *
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function extract($sourcePath, $targetDirName, $type) {
+		if ($this->encryptionManager->isEnabled()) {
+			$response = array();
+			$response = array_merge($response,
+				array("code" => StatusCode::ERROR, "desc" => $this->l->t("Encryption is not supported yet"))
+			);
+			return new DataResponse($response);
+		}
+		$absoluteFilePath = $this->getAbsoluteFilePath($sourcePath);
 
-        switch ($type) {
-            case 'zip':
-                $response = $this->extractZip($absoluteFilePath, $extractTo);
-                break;
-            case 'rar':
-                $response = $this->extractRar($absoluteFilePath, $extractTo);
-                break;
-            default:
-                $response = $this->extractOther($absoluteFilePath, $extractTo);
+		// Path to the file in Nextclouds internal filesystem
+		$internalDir = dirname($sourcePath);
 
-                // Extract .tar from .gz
-                if ($isTarGz && $response['code'] == StatusCode::SUCCESS) {
-                    // Extract .tar
-                    $tarName = pathinfo($absoluteFilePath)['filename'];
+		$isExternal = $this->isExternalStorage($internalDir);
 
-                    $tarFilePath = $extractTo . '/' . $tarName;
-                    $response = $this->extractOther($tarFilePath, $extractTo);
+		// Tar gz files downloaded from external storage look like '/tmp/oc_tmp_LNmlJI-.gz'
+		// in $absoluteFilePath, so $sourcePath has to be used
+		$isTarGz = self::isTarGz($sourcePath);
 
-                    // Remove .tar file
-                    unlink($tarFilePath);
-                }
-                break;
-        }
+		// Make the target directory name
+		$targetDirName = $this->sanitizeTargetPath($targetDirName);
+		$fileNameWithoutExtension = self::getFileNameWithoutExtension($absoluteFilePath);
 
-        // Register the new files to the NC filesystem
-        if ($isExternal) {
-            $this->moveFromTmp();
-        } else {
-            Filesystem::mkdir($internalTargetPath);
-        }
+		if (empty($targetDirName)) {
+			$targetDirName = $fileNameWithoutExtension;
+		}
 
-        $this->logger->info("Successfully extracted '$sourcePath' to '$internalTargetPath' ($this->transactionId)");
-        return $response;
-    }
+		// Path to the target folder in Nextclouds internal filesystem
+		$internalTargetPath = $this->getInternalTargetPath($internalDir, $targetDirName);
+		if (!$internalTargetPath) {
+			return new DataResponse(array(
+				'code' => StatusCode::ERROR,
+				'desc' => $this->l->t('Directory already exists')
+			));
+		}
 
-    /**
-     * Extracts a zip archive
-     *
-     * @param string $filePath absolute path to the source archive
-     * @param string $extractTo absolute path to the extraction directory
-     * @return array json response
-     */
-    public function extractZip(string $filePath, string $extractTo): array {
-        if (!extension_loaded('zip')) {
-            return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Zip extension is not available'));
-        }
+		$extractTo = $this->getExtractionPath($absoluteFilePath, $internalDir, $targetDirName, $isExternal);
 
-        $zip = new ZipArchive();
+		switch ($type) {
+			case 'zip':
+				$response = $this->extractZip($absoluteFilePath, $extractTo);
+				break;
+			case 'rar':
+				$response = $this->extractRar($absoluteFilePath, $extractTo);
+				break;
+			default:
+				$response = $this->extractOther($absoluteFilePath, $extractTo);
 
-        if (!$zip->open($filePath) === true) {
-            return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Cannot open Zip file'));
-        }
+				// Extract .tar from .gz
+				if ($isTarGz && $response['code'] == StatusCode::SUCCESS) {
+					// Extract .tar
+					$tarName = pathinfo($absoluteFilePath)['filename'];
 
-        $zip->extractTo($extractTo);
-        $zip->close();
-        return array('code' => StatusCode::SUCCESS);
-    }
+					$tarFilePath = $extractTo . '/' . $tarName;
+					$response = $this->extractOther($tarFilePath, $extractTo);
 
-    /**
-     * Extracts a rar archive
-     *
-     * @param string $filePath absolute path to the source archive
-     * @param string $extractTo absolute path to the extraction directory
-     * @return array json response
-     */
-    public function extractRar(string $filePath, string $extractTo): array {
-        if (!extension_loaded('rar')) {
-            exec('unrar x ' . escapeshellarg($filePath) . ' -R ' . escapeshellarg($extractTo) . '/ -o+', $output, $return);
+					// Remove .tar file
+					unlink($tarFilePath);
+				}
+				break;
+		}
 
-            if (sizeof($output) <= 4) {
-                return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Oops something went wrong. Check that you have rar extension or unrar installed'));
-            }
-        } else {
-            $rar_file = rar_open($filePath);
-            $list = rar_list($rar_file);
-            foreach ($list as $archive_file) {
-                $entry = rar_entry_get($rar_file, $archive_file->getName());
-                $entry->extract($extractTo);
-            }
-            rar_close($rar_file);
-        }
+		$this->postExtract($internalTargetPath, $extractTo, $isExternal);
 
-        return array('code' => StatusCode::SUCCESS);
-    }
+		$this->logger->info("Successfully extracted '$sourcePath' to '$internalTargetPath' ($this->transactionId)");
 
-    /**
-     * Extracts a other archive (tar, tar.gz)
-     *
-     * @param string $filePath absolute path to the source archive
-     * @param string $extractTo absolute path to the extraction directory
-     * @return array json response
-     */
-    public function extractOther(string $filePath, string $extractTo): array
-    {
-        exec('7za -y x ' . escapeshellarg($filePath) . ' -o' . escapeshellarg($extractTo), $output, $return);
+		return new DataResponse($response);
+	}
 
-        if (sizeof($output) <= 5) {
-            return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Oops something went wrong. Check that you have p7zip installed'));
-        }
+	/**
+	 * Check if the given path is part of an external storage provider
+	 *
+	 * @param string $internalPath any path in the target storage
+	 * @return bool
+	 *
+	 * @throws \OCP\Files\NotFoundException
+	 */
+	private function isExternalStorage(string $internalPath): bool {
+		return !$this->getStorage($internalPath)->isLocal();
+	}
 
-        return array('code' => StatusCode::SUCCESS);
-    }
+	/**
+	 * Get the storage interface at a given path
+	 *
+	 * @param string $internalPath any path in the target storage
+	 * @return IStorage
+	 * @throws \OCP\Files\NotFoundException
+	 */
+	private function getStorage(string $internalPath): IStorage {
+		$mountPointDir = Filesystem::getView()->getMountPoint($internalPath);
+		return $this->rootFolder->get($mountPointDir)->getStorage();
+	}
 
-    /**
-     * Sanitizes a raw target path
-     *
-     * @param string $dir raw path
-     * @return string sanitized path
-     */
-    private function sanitizeTargetPath(string $dir): string
-    {
-        return trim(str_replace('../', '', $dir));
-    }
+	/**
+	 * Sanitizes a raw target path
+	 *
+	 * @param string $dir raw path
+	 *
+	 * @return string sanitized path
+	 */
+	private function sanitizeTargetPath(string $dir): string {
+		return trim(preg_replace('#^(?:\.{0,2}\/|\/)+#', '', $dir));
+	}
 
-    /**
-     * Check if the given path is part of an external storage provider
-     *
-     * @param string $internalPath any path in the target storage
-     * @return bool
-     * @throws \OCP\Files\NotFoundException
-     */
-    public function isExternalStorage(string $internalPath): bool
-    {
-        return !$this->getStorage($internalPath)->isLocal();
-    }
+	/**
+	 * Returns the path to the target folder in Nextcloud's internal filesystem
+	 *
+	 * @param string $internalDir
+	 * @param string $targetDirName
+	 *
+	 * @return string|null internal target path
+	 */
+	private function getInternalTargetPath(string $internalDir, string $targetDirName): string|null {
+		// Path to the target folder in Nextcloud's internal filesystem
+		$internalTargetPath = "$internalDir/$targetDirName";
 
-    /**
-     * Get the storage interface at a given path
-     *
-     * @param string $internalPath any path in the target storage
-     * @return IStorage
-     * @throws \OCP\Files\NotFoundException
-     */
-    public function getStorage(string $internalPath): IStorage
-    {
-        $mountPointDir = Filesystem::getView()->getMountPoint($internalPath);
-        return $this->rootFolder->get($mountPointDir)->getStorage();
-    }
+		// Error if the target folder already exists
+		$folderExists = Filesystem::is_dir($internalTargetPath);
+		if ($folderExists) {
+			return null;
+		}
+		return $internalTargetPath;
+	}
 
-    /**
-     * Moves the locally generated files from the /tmp/ folder from this transaction to the nextcloud storage.
-     * This is the case if the file for this transaction is from an external storage (S3)
-     */
-    public function moveFromTmp(): void
-    {
-        $transactionDir = '/tmp/' . $this->transactionId . '/';
+	private function getExtractionPath(string $absoluteFilePath,
+		string $internalDir,
+		string $targetDirName,
+		bool $isExternal
+	): string {
+		$extractTo = dirname($absoluteFilePath) . '/' . $targetDirName;
+		if ($isExternal) {
+			$transactionDir = '/tmp/' . $this->transactionId;
 
-        $it = new RecursiveDirectoryIterator($transactionDir, FilesystemIterator::SKIP_DOTS);
-        $it = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+			// Remove leading '/' from external storage path
+			$internalDir = substr($internalDir, 0, 1) === '/' ? substr($internalDir, 1) : $internalDir;
+			$targetDir = strlen($internalDir) > 0 ? "$internalDir/$targetDirName" : $targetDirName;
 
-        foreach ($it as $fileInfo) {
-            if ($fileInfo->isFile()) {
-                $tmpFilePath = $fileInfo->getPathname();
-                $storageFilePath = '/' . substr($tmpFilePath, strlen($transactionDir));
+			$extractTo = "$transactionDir/$targetDir";
+		}
+		return $extractTo;
+	}
 
-                // move from tmp to nextcloud storage
-                Filesystem::fromTmpFile($tmpFilePath, $storageFilePath);
-            } elseif ($fileInfo->isDir()) {
-                rmdir($fileInfo->getPathname());
-            }
-        }
-        rmdir($transactionDir);
-    }
+	/**
+	 * Extracts a zip archive
+	 *
+	 * @param string $filePath absolute path to the source archive
+	 * @param string $extractTo absolute path to the extraction directory
+	 *
+	 * @return array json response
+	 */
+	private function extractZip(string $filePath, string $extractTo): array {
+		if (!extension_loaded('zip')) {
+			return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Zip extension is not available'));
+		}
 
-    /**
-     * Returns the name of the file at the given path without its extension
-     * @param string $path path to the file
-     * @return string file name without extension
-     */
-    public static function getFileNameWithoutExtension(string $path): string
-    {
-        $fileName = pathinfo($path)['filename'];
-        return self::isTarGz($path) ? pathinfo($fileName)['filename'] : $fileName;
-    }
+		$zip = new ZipArchive();
 
-    /**
-     * Checks if the file at the given path has the ending .tar.*
-     * @param string $path path to the file
-     * @return bool is tar.gz
-     */
-    public static function isTarGz(string $path): bool
-    {
-        $fileName = pathinfo($path)['filename'];
-        return array_key_exists('extension', pathinfo($fileName)) && pathinfo($fileName)['extension'] == 'tar';
-    }
+		if (!$zip->open($filePath) === true) {
+			return array('code' => StatusCode::ERROR, 'desc' => $this->l->t('Cannot open Zip file'));
+		}
+
+		$zip->extractTo($extractTo);
+		$zip->close();
+		return array('code' => StatusCode::SUCCESS);
+	}
+
+	/**
+	 * Extracts a rar archive
+	 *
+	 * @param string $filePath absolute path to the source archive
+	 * @param string $extractTo absolute path to the extraction directory
+	 *
+	 * @return array json response
+	 */
+	private function extractRar(string $filePath, string $extractTo): array {
+		if (!extension_loaded('rar')) {
+			exec('unrar x ' . escapeshellarg($filePath) . ' -R ' . escapeshellarg($extractTo) . '/ -o+',
+				$output,
+				$return
+			);
+
+			if (sizeof($output) <= 4) {
+				return array(
+					'code' => StatusCode::ERROR,
+					'desc' => $this->l->t('Oops something went wrong. Check that you have rar extension or unrar installed'
+					)
+				);
+			}
+		} else {
+			$rar_file = rar_open($filePath);
+			$list = rar_list($rar_file);
+			foreach ($list as $archive_file) {
+				$entry = rar_entry_get($rar_file, $archive_file->getName());
+				$entry->extract($extractTo);
+			}
+			rar_close($rar_file);
+		}
+
+		return array('code' => StatusCode::SUCCESS);
+	}
+
+	/**
+	 * Extracts a other archive (tar, tar.gz)
+	 *
+	 * @param string $filePath absolute path to the source archive
+	 * @param string $extractTo absolute path to the extraction directory
+	 *
+	 * @return array json response
+	 */
+	private function extractOther(string $filePath, string $extractTo): array {
+		exec('7za -y x ' . escapeshellarg($filePath) . ' -o' . escapeshellarg($extractTo), $output, $return);
+
+		if (sizeof($output) <= 5) {
+			return array(
+				'code' => StatusCode::ERROR,
+				'desc' => $this->l->t('Oops something went wrong. Check that you have p7zip installed')
+			);
+		}
+
+		return array('code' => StatusCode::SUCCESS);
+	}
+
+	/**
+	 * Checks if the file at the given path has the ending .tar.*
+	 *
+	 * @param string $path path to the file
+	 * @return bool is tar.gz
+	 */
+	private static function isTarGz(string $path): bool {
+		$fileName = pathinfo($path)['filename'];
+		return array_key_exists('extension', pathinfo($fileName)) && pathinfo($fileName)['extension'] == 'tar';
+	}
+
+	/**
+	 * Returns the name of the file at the given path without its extension
+	 *
+	 * @param string $path path to the file
+	 * @return string file name without extension
+	 */
+	private static function getFileNameWithoutExtension(string $path): string {
+		$fileName = pathinfo($path)['filename'];
+		return self::isTarGz($path) ? pathinfo($fileName)['filename'] : $fileName;
+	}
 }
