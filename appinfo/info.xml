@@ -7,9 +7,9 @@
     <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudExtract/master/img/extract.png</screenshot>
     <description><![CDATA[Extract archives.
 
-*  **Supported :** 
+*  **Supported :**
 
-    * Zip 
+    * Zip
     * Rar
     * Tar
     * Gzip
@@ -17,10 +17,10 @@
     * Deb
     * Bzip2
 
-*  **Requirements :** 
+*  **Requirements :**
     * Rar PHP extension  (pecl -v install rar)
 
-    * **OR** 
+    * **OR**
     * unrar (sudo apt-get install unrar)
 
     * **AND**
@@ -29,7 +29,7 @@
 *  **Note :** Encrypted files are not supported yet
 ]]></description>
 
-    <version>1.3.8</version>
+    <version>1.4.0</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
     <namespace>Extract</namespace>
@@ -38,7 +38,6 @@
     <website>https://github.com/PaulLereverend/NextcloudExtract</website>
     <bugs>https://github.com/PaulLereverend/NextcloudExtract/issues</bugs>
     <dependencies>
-        <nextcloud min-version="13" max-version="26"/>
-        <owncloud min-version="10.1.1" max-version="10"/>
+        <nextcloud min-version="20" max-version="27"/>
     </dependencies>
 </info>
