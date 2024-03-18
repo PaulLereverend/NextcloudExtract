@@ -1,5 +1,5 @@
 {
-    "name": "extract",
+    "name": "paullereverend/extract",
     "description": "Allows to extract archive from the web interface",
     "type": "project",
     "license": "AGPL",
@@ -9,8 +9,11 @@
         }
     ],
     "require": {
+        "php": ">=8.2",
+        "ext-zip": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.4"
+        "phpunit/phpunit": "^9",
+        "nextcloud/ocp": "^26"
     }
 }
