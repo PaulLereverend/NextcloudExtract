@@ -1,7 +1,9 @@
+## 1.3.8
+- NC26 support
 
 ## 1.3.6
+- Added a dialog to change the target directory name
 
-- NC27 support
 ## 1.3.5
 
 - Fix issue on external storage
