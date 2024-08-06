@@ -1,5 +1,5 @@
 {
-    "name": "extract",
+    "name": "extract/extract",
     "description": "Allows to extract archive from the web interface",
     "type": "project",
     "license": "AGPL",
