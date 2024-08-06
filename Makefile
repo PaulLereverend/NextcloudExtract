@@ -115,7 +115,7 @@ dist:
 source:
 	rm -rf $(source_build_directory)
 	mkdir -p $(source_build_directory)
-	gtar cvz --exclude-vcs \
+	tar cvz --exclude-vcs \
 	--exclude="../$(app_name)/build" \
 	--exclude="../$(app_name)/js/node_modules" \
 	--exclude="../$(app_name)/node_modules" \
@@ -128,7 +128,7 @@ source:
 appstore:
 	rm -rf $(appstore_build_directory)
 	mkdir -p $(appstore_build_directory)
-	gtar cvz --exclude-vcs \
+	tar cvz --exclude-vcs \
 	--exclude="../$(app_name)/build" \
 	--exclude="../$(app_name)/tests" \
 	--exclude="../$(app_name)/Makefile" \
