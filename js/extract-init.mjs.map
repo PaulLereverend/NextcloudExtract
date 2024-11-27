@@ -1,0 +1,1 @@
+{"version":3,"file":"extract-init.mjs","sources":["../src/init.ts"],"sourcesContent":["import { registerFileAction } from '@nextcloud/files'\n\nimport { action as extractAction } from './actions/extract-action'\n\nregisterFileAction(extractAction)"],"names":["extractAction"],"mappings":";;;;;AAIA,mBAAmBA,MAAa;"}
