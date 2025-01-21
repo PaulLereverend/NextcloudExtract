@@ -38,6 +38,6 @@
     <website>https://github.com/PaulLereverend/NextcloudExtract</website>
     <bugs>https://github.com/PaulLereverend/NextcloudExtract/issues</bugs>
     <dependencies>
-        <nextcloud min-version="29" max-version="29"/>
+        <nextcloud min-version="29" max-version="30"/>
     </dependencies>
 </info>
