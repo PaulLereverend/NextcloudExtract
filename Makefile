@@ -115,7 +115,7 @@ dist:
 source:
 	rm -rf $(source_build_directory)
 	mkdir -p $(source_build_directory)
-	gtar cvz --exclude-vcs \
+	tar cvz --exclude-vcs \
 	--exclude="../$(app_name)/build" \
 	--exclude="../$(app_name)/js/node_modules" \
 	--exclude="../$(app_name)/node_modules" \
@@ -128,8 +128,9 @@ source:
 appstore:
 	rm -rf $(appstore_build_directory)
 	mkdir -p $(appstore_build_directory)
-	gtar cvz --exclude-vcs \
+	tar cvz --exclude-vcs \
 	--exclude="../$(app_name)/build" \
+	--exclude="../$(app_name)/src" \
 	--exclude="../$(app_name)/tests" \
 	--exclude="../$(app_name)/Makefile" \
 	--exclude="../$(app_name)/*.log" \
@@ -149,9 +150,15 @@ appstore:
 	--exclude="../$(app_name)/protractor\.*" \
 	--exclude="../$(app_name)/.*" \
 	--exclude="../$(app_name)/js/.*" \
-	-f $(appstore_package_name).tar.gz ../$(app_name) \
+	-f $(appstore_package_name)_${version}.tar.gz ../$(app_name) \
 
 .PHONY: test
 test: composer
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+
+check-version:
+	@if [ "${version}" = "" ]; then\
+		echo "Error: You must set version, eg. make -e version=v0.0.1 appstore";\
+		exit 1;\
+	fi

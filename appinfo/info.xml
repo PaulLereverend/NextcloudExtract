@@ -29,7 +29,7 @@
 *  **Note :** Encrypted files are not supported yet
 ]]></description>
 
-    <version>1.3.6</version>
+    <version>1.4.0</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com">Paul Lereverend</author>
     <namespace>Extract</namespace>
@@ -38,6 +38,6 @@
     <website>https://github.com/PaulLereverend/NextcloudExtract</website>
     <bugs>https://github.com/PaulLereverend/NextcloudExtract/issues</bugs>
     <dependencies>
-        <nextcloud min-version="20" max-version="27"/>
+        <nextcloud min-version="29" max-version="31"/>
     </dependencies>
 </info>
