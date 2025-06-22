@@ -20,35 +20,29 @@
 
 namespace OCA\Extract\AppInfo;
 
+use OCA\Extract\Listener\LoadExtractActions;
+use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Bootstrap\IBootContext;
 
 use OCP\AppFramework\App;
-use OCP\EventDispatcher\IEventDispatcher;
-use OCP\Util;
 
 class Application extends App  implements IBootstrap {
 
+	public const APP_ID = "extract";
+
 	public function __construct(array $urlParams = []) {
-		$infoXml = new \SimpleXMLElement(file_get_contents(__DIR__ . '/../../appinfo/info.xml'));
-		$this->appName = (string)$infoXml->id;
-		parent::__construct($this->appName, $urlParams);
+		parent::__construct(self::APP_ID, $urlParams);
 	}
 
 	// Called later than "register".
 	public function boot(IBootContext $context): void {
-		$context->injectFn(function(IEventDispatcher $dispatcher) {
-			Util::addScript($this->appName, 'extraction' );
-			Util::addStyle($this->appName, 'style' );
-		});
 	}
 
 	// Called earlier than boot, so anything initialized in the
 	// "boot()" method must not be used here.
 	public function register(IRegistrationContext $context): void {
-		// if ((@include_once __DIR__ . '/../../vendor/autoload.php') === false) {
-		// 	throw new \Exception('Cannot include autoload. Did you run install dependencies using composer?');
-		// }
+		$context->registerEventListener(LoadAdditionalScriptsEvent::class, LoadExtractActions::class);
 	}
 }
